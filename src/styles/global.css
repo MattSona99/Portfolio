@@ -201,3 +201,123 @@ body {
   height: 0 !important;
   background: transparent !important;
 }
+
+/* HERO GAME */
+.hero-game {
+  color: var(--fg);
+  background: var(--bg);
+  isolation: isolate;
+}
+
+.hero-game__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-game__hud,
+.hero-game__instructions,
+.hero-game__complete {
+  position: absolute;
+  z-index: 2;
+  font-family: monospace;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: .72rem;
+  pointer-events: none;
+}
+
+.hero-game__hud--top {
+  top: clamp(1rem, 3vw, 2rem);
+  left: clamp(1rem, 3vw, 2rem);
+  display: grid;
+  gap: .65rem;
+}
+
+.hero-game__dots { opacity: .6; }
+
+.hero-game__instructions {
+  top: clamp(1rem, 3vw, 2rem);
+  right: clamp(1rem, 3vw, 2rem);
+  display: grid;
+  gap: .5rem;
+  text-align: right;
+  color: var(--fg);
+  opacity: .75;
+}
+
+.hero-game__instructions span { font-size: 1.1rem; }
+.hero-game__instructions small,
+.hero-game__status-group small,
+.hero-game__objective small { font-size: .62rem; line-height: 1.6; }
+
+.hero-game__hud--bottom {
+  right: clamp(1rem, 3vw, 2rem);
+  bottom: clamp(1rem, 3vw, 2rem);
+  left: clamp(1rem, 3vw, 2rem);
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+}
+
+.hero-game__avatar {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--line);
+  border-radius: .6rem;
+  font-size: 1.5rem;
+}
+
+.hero-game__status-group { display: grid; gap: .25rem; }
+.hero-game__status-group strong { font-weight: 400; }
+.hero-game__objective {
+  display: grid;
+  gap: .25rem;
+  margin-left: auto;
+  text-align: right;
+}
+.hero-game__objective strong { color: var(--manifest); font-weight: 500; }
+.hero-game__sr-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.hero-game__complete {
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: .75rem;
+  background: color-mix(in srgb, var(--bg) 84%, transparent);
+  text-align: center;
+  pointer-events: auto;
+}
+.hero-game__complete[hidden] { display: none; }
+.hero-game__complete h2 { margin: 0; font-size: clamp(1.3rem, 4vw, 2.5rem); }
+.hero-game__complete button {
+  margin-top: .5rem;
+  border: 1px solid var(--fg);
+  padding: .75rem 1rem;
+  cursor: pointer;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+@media (max-width: 640px) {
+  .hero-game__instructions { top: auto; bottom: 5.5rem; }
+  .hero-game__hud--bottom { gap: .5rem; }
+  .hero-game__avatar { width: 2.25rem; height: 2.25rem; }
+  .hero-game__objective small { max-width: 8rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-game * { scroll-behavior: auto; }
+}

@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from 'astro:transitions';
 import Navbar from '../components/layout/Navbar.astro';
+import Loader from '../components/ui/Loader.astro';
 import '../styles/global.css';
 const { title = 'Matteo Sonaglioni' } = Astro.props;
 ---
@@ -21,6 +22,7 @@ const { title = 'Matteo Sonaglioni' } = Astro.props;
         <ClientRouter />
     </head>
     <body class="bg-bg text-fg transition-colors duration-300">
+        <Loader />
         <Navbar />
         <main class="wrap">
             <slot />
@@ -37,6 +39,13 @@ const { title = 'Matteo Sonaglioni' } = Astro.props;
             import '../scripts/lang';
             import '../scripts/lenis';
             import '../scripts/animations/hero';
+            import { initCards } from '../scripts/animations/cards';
+            import { initLoader } from '../scripts/animations/loader';
+
+            document.addEventListener('astro:page-load', () => {
+                initLoader();
+                initCards();
+            });
         </script>
     </body>
 </html>

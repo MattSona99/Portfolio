@@ -1,0 +1,44 @@
+---
+// src/components/ui/Loader.astro
+---
+<div
+  id="site-loader"
+  aria-hidden="true"
+  class="fixed inset-0 z-[9999] grid place-items-center overflow-hidden pointer-events-auto select-none"
+  style="background-color: transparent; color: #F2F1EE;"
+>
+  {/* --- SFONDO A 3 PERSIANE VERTICALI --- */}
+  <div class="loader-shutters absolute inset-0 grid grid-cols-3 pointer-events-none">
+    <div class="loader-shutter h-full w-full border-r border-[#333436] bg-[#121416] will-change-transform origin-top"></div>
+    <div class="loader-shutter h-full w-full border-r border-[#333436] bg-[#121416] will-change-transform origin-top"></div>
+    <div class="loader-shutter h-full w-full bg-[#121416] will-change-transform origin-top"></div>
+  </div>
+
+  {/* --- CENTER BOX (Solo Percentuale + Barra Colorata) --- */}
+  <div class="loader-center relative z-10 w-[min(90vw,460px)]">
+    <div class="box relative bg-[#121416]/90 backdrop-blur-xs p-8 md:p-12 border border-[#333436]">
+      <span class="mark mark-tl"></span>
+      <span class="mark mark-tr"></span>
+      <span class="mark mark-bl"></span>
+      <span class="mark mark-br"></span>
+
+      <div class="flex flex-col gap-6">
+        {/* Contatore Percentuale */}
+        <div class="overflow-hidden py-1">
+          <div class="loader-counter-wrap flex items-baseline justify-between font-bespoke font-extrabold leading-none tracking-tight">
+            <span class="loader-counter text-6xl md:text-8xl tabular-nums text-[#F2F1EE]">000</span>
+            <span class="text-2xl md:text-4xl text-[#55565a]">%</span>
+          </div>
+        </div>
+
+        {/* Barra di progresso multi-accento */}
+        <div class="relative h-[3px] w-full overflow-hidden bg-[#333436]">
+          <div
+            class="loader-bar h-full w-full origin-left scale-x-0 will-change-transform"
+            style="background: linear-gradient(90deg, #2563eb 0%, #facc15 50%, #dc2626 100%);"
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

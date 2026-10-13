@@ -1,5 +1,9 @@
 ---
+import { Image } from 'astro:assets';
 import Box from '../ui/Box.astro';
+import githubImg from '../../assets/cards/github.png';
+import curriculumImg from '../../assets/cards/curriculum.png';
+import manifestImg from '../../assets/cards/manifest.png';
 
 interface Props {
   title: string;
@@ -12,12 +16,222 @@ const { title, href, accent } = Astro.props;
   as="a"
   href={href}
   data-card
+  data-card-type={accent}
   style={`--accent: var(--${accent})`}
-  class="flex h-full flex-col"
+  class="flex h-full min-h-0 flex-col overflow-hidden"
 >
   <div class="grid h-14 shrink-0 place-items-center border-b border-line text-sm font-bold tracking-[0.2em] uppercase md:text-base">
     {title}
   </div>
-  <!-- slot immagine: step successivo -->
-  <div class="flex-1"></div>
+  
+  <div 
+    class="card-image-wrap relative min-h-0 flex-1 w-full overflow-hidden bg-bg cursor-pointer"
+    style="contain: layout paint;"
+  >
+    {/* --- 1. GITHUB CARD (Water CRT) --- */}
+    {accent === 'github' && (
+      <>
+        <div class="image-content-group absolute inset-0 w-full h-full">
+          <Image 
+            src={githubImg} 
+            alt="GitHub" 
+            width={800}
+            format="webp"
+            quality={85}
+            draggable="false"
+            class="absolute inset-0 h-full w-full object-cover object-center pointer-events-none"
+            style="filter: contrast(1.2) saturate(0.8) brightness(0.9);" 
+          />
+          
+          <div 
+            class="pointer-events-none absolute inset-0 z-20"
+            style="
+              background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.15) 50%);
+              background-size: 100% 4px;
+              box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.6);
+            "
+          ></div>
+        </div>
+
+        <svg class="absolute w-0 h-0 pointer-events-none" aria-hidden="true" focusable="false">
+          <defs>
+            <filter id="waterFilter" color-interpolation-filters="sRGB">
+              <feTurbulence type="fractalNoise" baseFrequency="0 0" numOctaves="1" result="noise" />
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+          </defs>
+        </svg>
+      </>
+    )}
+
+    {/* --- 2. CURRICULUM CARD (Cyber-Scanner + VHS Glitch Tear + RGB Split) --- */}
+    {accent === 'curriculum' && (
+      <>
+        <div class="curriculum-content-group absolute inset-0 w-full h-full">
+          <Image 
+            src={curriculumImg} 
+            alt="Curriculum" 
+            width={800}
+            format="webp"
+            quality={85}
+            draggable="false"
+            class="absolute inset-0 h-full w-full object-cover object-center pointer-events-none"
+            style="filter: contrast(1.2) saturate(0.8) brightness(0.9);"
+          />
+          
+          <div 
+            class="pointer-events-none absolute inset-0 z-10 bg-[#facc15] opacity-[0.3]" 
+            style="mix-blend-mode: multiply;"
+          ></div>
+
+          <div 
+            class="scanner-beam pointer-events-none absolute inset-0 z-15 opacity-0"
+            style="
+              background: linear-gradient(
+                to bottom,
+                transparent calc(var(--scan-y, 50%) - 45px),
+                rgba(250, 204, 21, 0.08) calc(var(--scan-y, 50%) - 12px),
+                rgba(250, 204, 21, 0.65) var(--scan-y, 50%),
+                rgba(250, 204, 21, 0.08) calc(var(--scan-y, 50%) + 12px),
+                transparent calc(var(--scan-y, 50%) + 45px)
+              );
+            "
+          ></div>
+
+          <div 
+            class="pointer-events-none absolute inset-0 z-20"
+            style="
+              background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.15) 50%);
+              background-size: 100% 4px;
+              box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.6);
+            "
+          ></div>
+        </div>
+
+        <svg class="absolute w-0 h-0 pointer-events-none" aria-hidden="true" focusable="false">
+          <defs>
+            <filter id="cyberScanFilter" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+              <feTurbulence 
+                class="scan-turbulence"
+                type="fractalNoise" 
+                baseFrequency="0.002 0.18" 
+                numOctaves="1" 
+                seed="1" 
+                result="sliceNoise" 
+              />
+              <feDisplacementMap 
+                class="scan-displacement"
+                in="SourceGraphic" 
+                in2="sliceNoise" 
+                scale="0" 
+                xChannelSelector="R" 
+                yChannelSelector="G" 
+                result="displaced"
+              />
+              <feColorMatrix in="displaced" type="matrix"
+                values="1 0 0 0 0
+                        0 0 0 0 0
+                        0 0 0 0 0
+                        0 0 0 1 0" result="red" />
+              <feOffset class="rgb-red-offset" in="red" dx="0" dy="0" result="redShifted" />
+
+              <feColorMatrix in="displaced" type="matrix"
+                values="0 0 0 0 0
+                        0 1 0 0 0
+                        0 0 0 0 0
+                        0 0 0 1 0" result="green" />
+
+              <feColorMatrix in="displaced" type="matrix"
+                values="0 0 0 0 0
+                        0 0 0 0 0
+                        0 0 1 0 0
+                        0 0 0 1 0" result="blue" />
+              <feOffset class="rgb-blue-offset" in="blue" dx="0" dy="0" result="blueShifted" />
+
+              <feBlend mode="screen" in="redShifted" in2="green" result="rg" />
+              <feBlend mode="screen" in="rg" in2="blueShifted" />
+            </filter>
+          </defs>
+        </svg>
+      </>
+    )}
+
+    {/* --- 3. MANIFEST CARD (Super-Optimized Crimson Black Hole) --- */}
+    {accent === 'manifest' && (
+      <>
+        <div class="bh-content-group absolute inset-0 w-full h-full">
+          <Image 
+            src={manifestImg} 
+            alt="Manifest" 
+            width={800}
+            format="webp"
+            quality={85}
+            draggable="false"
+            class="absolute inset-0 h-full w-full object-cover object-center pointer-events-none"
+            style="filter: contrast(1.2) saturate(0.8) brightness(0.9);"
+          />
+          
+          <div 
+            class="pointer-events-none absolute inset-0 z-10 bg-[#ef4444] opacity-[0.28]" 
+            style="mix-blend-mode: multiply;"
+          ></div>
+
+          <div 
+            class="black-hole-core pointer-events-none absolute inset-0 z-15 opacity-0"
+            style="
+              background: radial-gradient(
+                circle 95px at var(--bh-x, 50%) var(--bh-y, 50%), 
+                rgba(0, 0, 0, 0.97) 0%, 
+                rgba(0, 0, 0, 0.8) 28%, 
+                rgba(239, 68, 68, 0.25) 48%, 
+                transparent 75%
+              );
+            "
+          ></div>
+
+          <div 
+            class="pointer-events-none absolute inset-0 z-20"
+            style="
+              background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.15) 50%);
+              background-size: 100% 4px;
+              box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.6);
+            "
+          ></div>
+        </div>
+
+        <svg class="absolute w-0 h-0 pointer-events-none" aria-hidden="true" focusable="false">
+          <defs>
+            <filter 
+              id="blackHoleFilter" 
+              x="-10%" 
+              y="-10%" 
+              width="120%" 
+              height="120%" 
+              filterUnits="objectBoundingBox"
+              primitiveUnits="objectBoundingBox"
+              color-interpolation-filters="sRGB"
+            >
+              <feImage 
+                class="bh-fe-image" 
+                x="-0.5" 
+                y="-0.5" 
+                width="2" 
+                height="2" 
+                preserveAspectRatio="none" 
+                result="bhMap" 
+              />
+              <feDisplacementMap 
+                class="bh-displacement"
+                in="SourceGraphic" 
+                in2="bhMap" 
+                scale="0" 
+                xChannelSelector="R" 
+                yChannelSelector="G" 
+              />
+            </filter>
+          </defs>
+        </svg>
+      </>
+    )}
+  </div>
 </Box>
