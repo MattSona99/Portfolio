@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Box from '../components/ui/Box.astro';
+import PageCard from '../components/home/PageCard.astro';
+
+const cards = [
+  { title: 'GitHub', href: '/github', accent: 'github' },
+  { title: 'Curriculum', href: '/curriculum', accent: 'curriculum' },
+  { title: 'Manifesto', href: '/manifest', accent: 'manifest' },
+] as const;
+---
+<BaseLayout>
+  <Box
+    as="section"
+    data-hero
+    aria-label="Hero"
+    class="-mt-2px relative h-[calc(100svh-var(--header-h))] w-full overflow-hidden"
+  >
+    <div class="absolute inset-0 h-full w-full overflow-hidden">
+
+
+      <div data-hero-overlay class="absolute inset-0 bg-bg/0 pointer-events-none transition-colors duration-100"></div>
+    </div>
+  </Box>
+
+  <section data-cards-section class="box-grid -mt-2px grid h-[100svh] w-full grid-cols-1 items-stretch md:grid-cols-3 pt-[var(--header-h)]">
+    {cards.map((c) => <PageCard {...c} />)}
+  </section>
+</BaseLayout>

@@ -1,0 +1,42 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Navbar from '../components/layout/Navbar.astro';
+import '../styles/global.css';
+const { title = 'Matteo Sonaglioni' } = Astro.props;
+---
+<!doctype html>
+<html lang="en" data-theme="dark">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>{title}</title>
+        <script is:inline>
+            const apply = (doc) => {
+                doc.documentElement.dataset.theme = localStorage.getItem('theme') ?? 'dark';
+                doc.documentElement.lang = localStorage.getItem('lang') ?? 'en';
+            };
+            apply(document);
+            document.addEventListener('astro:before-swap', (e) => apply(e.newDocument));
+        </script>
+        <ClientRouter />
+    </head>
+    <body class="bg-bg text-fg transition-colors duration-300">
+        <Navbar />
+        <main class="wrap">
+            <slot />
+        </main>
+        <div 
+            id="scroll-percentage" 
+            aria-hidden="true"
+            class="pointer-events-none fixed top-1/2 right-2 z-50 origin-center -translate-y-1/2 rotate-90 font-bespoke text-sm font-bold tracking-[0.2em] tabular-nums opacity-50 md:right-6 md:text-base"
+        >
+            000%
+        </div>
+        <script>
+            import '../scripts/theme';
+            import '../scripts/lang';
+            import '../scripts/lenis';
+            import '../scripts/animations/hero';
+        </script>
+    </body>
+</html>

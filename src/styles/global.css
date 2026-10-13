@@ -1,0 +1,203 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@custom-variant light (&:where([data-theme=light], [data-theme=light] *));
+
+:root {
+  --bg: #121416;
+  --fg: #F2F1EE;
+  --line: #333436;
+  --mark: #55565a;
+  --shade-a: #333436;
+  --shade-b: #4b4c4f;
+  --contrast-a: #cecdcb;
+  --contrast-b: #a9a8a5;
+  --github: #2563eb;
+  --curriculum: #facc15;
+  --manifest: #dc2626;
+  --header-h: 4rem;
+}
+
+:root[data-theme="light"] {
+  --bg: #F2F1EE;
+  --fg: #121416;
+  --line: #a9a8a5;
+  --mark: #8c8b88;
+  --shade-a: #a9a8a5;
+  --shade-b: #8c8b88;
+  --contrast-a: #333436;
+  --contrast-b: #121416;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-line: var(--line);
+  --color-github: var(--github);
+  --color-curriculum: var(--curriculum);
+  --color-manifest: var(--manifest);
+  --font-bespoke: "Bespoke", sans-serif;
+}
+
+@font-face {
+  font-family: "Bespoke";
+  src: url("/fonts/BespokeStencil-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bespoke";
+  src: url("/fonts/BespokeStencil-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bespoke";
+  src: url("/fonts/BespokeStencil-Extrabold.otf") format("opentype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer components {
+  .wrap {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 1440px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  @media (min-width: 48rem) {
+    .wrap {
+      padding-left: 2.5rem;
+      padding-right: 2.5rem;
+    }
+  }
+
+  .box {
+    --b: 1px;
+    --mark-s: 14px;
+    --mark-w: 1px;
+    position: relative;
+    border: var(--b) solid var(--line);
+  }
+
+  .box-sm {
+    --b: 1px;
+    border: var(--b) solid var(--line);
+  }
+
+  .mark {
+    --mo: calc(var(--b) / -2 - var(--mark-s) / 2);
+    position: absolute;
+    width: var(--mark-s);
+    height: var(--mark-s);
+    pointer-events: none;
+  }
+  .mark::before,
+  .mark::after {
+    content: "";
+    position: absolute;
+  }
+  .mark::before {
+    left: 0;
+    right: 0;
+    top: calc((var(--mark-s) - var(--mark-w)) / 2);
+    border-top: var(--mark-w) solid var(--mark);
+  }
+  .mark::after {
+    top: 0;
+    bottom: 0;
+    left: calc((var(--mark-s) - var(--mark-w)) / 2);
+    border-left: var(--mark-w) solid var(--mark);
+  }
+  .mark-tl {
+    top: var(--mo);
+    left: var(--mo);
+  }
+  .mark-tr {
+    top: var(--mo);
+    right: var(--mo);
+  }
+  .mark-bl {
+    bottom: var(--mo);
+    left: var(--mo);
+  }
+  .mark-br {
+    bottom: var(--mo);
+    right: var(--mo);
+  }
+
+  .box-grid > * + * {
+    margin-top: -1px;
+  }
+  @media (min-width: 48rem) {
+    .box-grid > * + * {
+      margin-top: 0;
+      margin-left: -1px;
+    }
+  }
+
+  .sheen {
+    --from: var(--shade-a);
+    --to: var(--shade-b);
+    position: relative;
+    isolation: isolate;
+    transition: color 0.25s ease;
+  }
+  .sheen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(to bottom, var(--from), var(--to));
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .sheen:hover::before {
+    opacity: 1;
+  }
+  .sheen-contrast {
+    --from: var(--contrast-a);
+    --to: var(--contrast-b);
+    transition:
+      color 0.25s ease,
+      scale 0.2s ease;
+  }
+  .sheen-contrast:hover {
+    color: var(--bg);
+  }
+
+  :root[lang="it"] .sheen[data-seg="it"],
+  :root[lang="en"] .sheen[data-seg="en"] {
+    --from: var(--contrast-a);
+    --to: var(--contrast-b);
+    color: var(--bg);
+  }
+  :root[lang="it"] .sheen[data-seg="it"]::before,
+  :root[lang="en"] .sheen[data-seg="en"]::before {
+    opacity: 1;
+  }
+}
+
+body {
+  overflow-x: clip;
+  width: 100vw;
+}
+
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}

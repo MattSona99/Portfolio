@@ -1,0 +1,21 @@
+---
+interface Props {
+  as?: keyof HTMLElementTagNameMap;
+  size?: 'main' | 'sm';
+  class?: string;
+  [attr: string]: unknown;
+}
+const { as: Tag = 'div', size = 'main', class: className = '', ...rest } = Astro.props;
+const main = size === 'main';
+---
+<Tag class:list={[main ? 'box' : 'box-sm', className]} {...rest}>
+  <slot />
+  {main && (
+    <>
+      <i class="mark mark-tl" aria-hidden="true"></i>
+      <i class="mark mark-tr" aria-hidden="true"></i>
+      <i class="mark mark-bl" aria-hidden="true"></i>
+      <i class="mark mark-br" aria-hidden="true"></i>
+    </>
+  )}
+</Tag>

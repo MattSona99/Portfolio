@@ -1,0 +1,23 @@
+---
+import Box from '../ui/Box.astro';
+import ThemeToggle from '../ui/ThemeToggle.astro';
+import LangToggle from '../ui/LangToggle.astro';
+---
+<header transition:persist class="sticky top-0 z-50 bg-bg">
+  <div class="wrap">
+    <Box
+      as="nav"
+      aria-label="Principale"
+      class="grid h-16 grid-cols-[1fr_auto] items-center px-4 md:grid-cols-[1fr_auto_1fr] md:px-6"
+    >
+      <span class="hidden md:block" aria-hidden="true"></span>
+      <a href="/home" class="font-bespoke text-2xl font-extrabold tracking-[0.2em] md:text-4xl">
+        MS
+      </a>
+      <div class="flex items-center justify-end gap-2">
+        <LangToggle />
+        <ThemeToggle />
+      </div>
+    </Box>
+  </div>
+</header>

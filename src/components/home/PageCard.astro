@@ -1,0 +1,23 @@
+---
+import Box from '../ui/Box.astro';
+
+interface Props {
+  title: string;
+  href: string;
+  accent: 'github' | 'curriculum' | 'manifest';
+}
+const { title, href, accent } = Astro.props;
+---
+<Box
+  as="a"
+  href={href}
+  data-card
+  style={`--accent: var(--${accent})`}
+  class="flex h-full flex-col"
+>
+  <div class="grid h-14 shrink-0 place-items-center border-b border-line text-sm font-bold tracking-[0.2em] uppercase md:text-base">
+    {title}
+  </div>
+  <!-- slot immagine: step successivo -->
+  <div class="flex-1"></div>
+</Box>
