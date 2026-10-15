@@ -1,51 +1,83 @@
 ---
-import { ClientRouter } from 'astro:transitions';
-import Navbar from '../components/layout/Navbar.astro';
-import Loader from '../components/ui/Loader.astro';
-import '../styles/global.css';
-const { title = 'Matteo Sonaglioni' } = Astro.props;
+import { ClientRouter } from "astro:transitions";
+import Navbar from "../components/layout/Navbar.astro";
+import Loader from "../components/ui/Loader.astro";
+import "../styles/global.css";
+const { title = "Matteo Sonaglioni" } = Astro.props;
 ---
+
 <!doctype html>
 <html lang="en" data-theme="dark">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width" />
-        <title>{title}</title>
-        <script is:inline>
-            const apply = (doc) => {
-                doc.documentElement.dataset.theme = localStorage.getItem('theme') ?? 'dark';
-                doc.documentElement.lang = localStorage.getItem('lang') ?? 'en';
-            };
-            apply(document);
-            document.addEventListener('astro:before-swap', (e) => apply(e.newDocument));
-        </script>
-        <ClientRouter />
-    </head>
-    <body class="bg-bg text-fg transition-colors duration-300">
-        <Loader />
-        <Navbar />
-        <main class="wrap">
-            <slot />
-        </main>
-        <div 
-            id="scroll-percentage" 
-            aria-hidden="true"
-            class="pointer-events-none fixed top-1/2 right-2 z-50 origin-center -translate-y-1/2 rotate-90 font-bespoke text-sm font-bold tracking-[0.2em] tabular-nums opacity-50 md:right-6 md:text-base"
-        >
-            000%
-        </div>
-        <script>
-            import '../scripts/theme';
-            import '../scripts/lang';
-            import '../scripts/lenis';
-            import '../scripts/animations/hero';
-            import { initCards } from '../scripts/animations/cards';
-            import { initLoader } from '../scripts/animations/loader';
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+    <script is:inline>
+      const apply = (doc) => {
+        doc.documentElement.dataset.theme =
+          localStorage.getItem("theme") ?? "dark";
+        doc.documentElement.lang = localStorage.getItem("lang") ?? "en";
+      };
+      apply(document);
+      document.addEventListener("astro:before-swap", (e) =>
+        apply(e.newDocument),
+      );
+    </script>
+    <ClientRouter />
+  </head>
+  <body class="bg-bg text-fg transition-colors duration-300">
+    <!-- Avvolgi il loader in un div nativo per forzare la persistenza del DOM -->
+    <div transition:persist="loader-wrapper">
+      <Loader />
+    </div>
 
-            document.addEventListener('astro:page-load', () => {
-                initLoader();
-                initCards();
-            });
-        </script>
-    </body>
+    <Navbar transition:persist="navbar" />
+    <main class="wrap">
+      <slot />
+    </main>
+    <div
+      id="scroll-percentage"
+      aria-hidden="true"
+      class="pointer-events-none fixed top-1/2 right-2 z-50 origin-center -translate-y-1/2 rotate-90 font-bespoke text-sm font-bold tracking-[0.2em] tabular-nums opacity-50 md:right-6 md:text-base"
+    >
+      000%
+    </div>
+    <script>
+      import "../scripts/theme";
+      import "../scripts/lang";
+      import "../scripts/lenis";
+      import "../scripts/animations/hero";
+      import { initCards } from "../scripts/animations/cards";
+      import { initLoader } from "../scripts/animations/loader";
+      import { initFooterMotion } from "../scripts/footer-motion";
+
+      let cleanupFooter: (() => void) | undefined;
+
+      document.addEventListener("astro:page-load", () => {
+        const loader = document.getElementById("site-loader");
+
+        // Usa l'oggetto window per persistere lo stato tra i cambi pagina
+        // ignorando l'errore TypeScript se presente
+        if (!(window as any).hasPlayedLoader) {
+          initLoader();
+          (window as any).hasPlayedLoader = true;
+        } else if (loader) {
+          // QUESTO È FONDAMENTALE: Se torni indietro, il loader HTML rinasce,
+          // dobbiamo nasconderlo subito per non far sembrare la pagina bloccata
+          loader.style.display = "none";
+          document.documentElement.style.overflow = "";
+        }
+
+        initCards();
+
+        cleanupFooter?.();
+        cleanupFooter = initFooterMotion();
+      });
+
+      document.addEventListener("astro:before-swap", () => {
+        cleanupFooter?.();
+        cleanupFooter = undefined;
+      });
+    </script>
+  </body>
 </html>

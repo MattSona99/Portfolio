@@ -19,6 +19,13 @@ type InputHooks = {
   onLand?: () => void;
   // Se restituisce false (Hero senza focus) i tasti freccia non muovono il cubo.
   isEnabled?: () => boolean;
+  // Chiamato quando il cubo arriva su una nuova tile (posizione già aggiornata).
+  onArrive?: (position: Point, from: Point) => void;
+  // Se restituisce false la mossa è rifiutata (es. ingresso nel buco a percorso incompleto):
+  // il cubo urta un muro invisibile e rimbalza indietro (vedi onBump).
+  canMove?: (next: Point) => boolean;
+  // Chiamato nell'istante dell'impatto contro il muro invisibile.
+  onBump?: (from: Point, next: Point) => void;
 };
 
 export function bindKeyboard(
@@ -42,6 +49,31 @@ export function bindKeyboard(
     return null;
   };
 
+  // Mossa rifiutata: il cubo parte verso la tile, urta il muro invisibile a metà strada
+  // e rimbalza indietro. Non si concatena con altri salti anche se i tasti restano premuti.
+  const bump = (dir: MoveDir, next: Point, from: Point) => {
+    state.target = next;
+    state.moveDir = dir;
+    state.moveProgress = 0;
+    state.bumping = true;
+
+    hooks.onMoveStart?.();
+
+    gsap
+      .timeline({
+        onComplete: () => {
+          state.target = null;
+          state.moveDir = null;
+          state.moveProgress = 0;
+          state.roll = 0;
+          state.bumping = false;
+        },
+      })
+      .to(state, { moveProgress: 0.42, duration: 0.11, ease: 'power2.in' })
+      .call(() => hooks.onBump?.(from, next))
+      .to(state, { moveProgress: 0, duration: 0.4, ease: 'power3.out' });
+  };
+
   const tryMove = () => {
     if (!(hooks.isEnabled?.() ?? true)) return;
 
@@ -56,6 +88,13 @@ export function bindKeyboard(
       x: state.position.x + step.x,
       y: state.position.y + step.y,
     };
+
+    const from: Point = { ...state.position };
+
+    if (hooks.canMove && !hooks.canMove(next)) {
+      bump(dir, next, from);
+      return;
+    }
 
     state.target = next;
     state.moveDir = dir;
@@ -74,6 +113,8 @@ export function bindKeyboard(
         state.moveDir = null;
         state.moveProgress = 0;
         state.roll = 0;
+
+        hooks.onArrive?.(next, from);
 
         // Tasti ancora premuti → salta di nuovo subito, altrimenti atterraggio.
         const enabled = hooks.isEnabled?.() ?? true;

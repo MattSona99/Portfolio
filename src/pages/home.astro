@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Box from "../components/ui/Box.astro";
 import PageCard from "../components/home/PageCard.astro";
 import HeroGame from "../components/home/HeroGame.astro";
+import Footer from "../components/home/Footer.astro";
 
 const cards = [
   { title: "GitHub", href: "/github", accent: "github" },
@@ -28,8 +29,10 @@ const cards = [
 
   <section
     data-cards-section
-    class="box-grid -mt-2px grid h-[100svh] w-full grid-cols-1 items-stretch md:grid-cols-3 pt-[var(--header-h)]"
+    class="box-grid -mt-2px grid h-[100svh] w-full grid-cols-1 items-stretch pt-[var(--header-h)] md:grid-cols-3"
   >
     {cards.map((c) => <PageCard {...c} />)}
   </section>
+
+  <Footer />
 </BaseLayout>

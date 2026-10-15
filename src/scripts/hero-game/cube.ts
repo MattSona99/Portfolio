@@ -1,5 +1,6 @@
 import { CONFIG, cubeMetrics } from "./config";
 import type { MoveDir, Palette } from "./types";
+import { mixColors } from "./color";
 import { createEyeState } from "./animations";
 import type { EyeState } from "./animations";
 
@@ -88,7 +89,8 @@ const hash = (n: number) => {
   return r - Math.floor(r);
 };
 
-type Burst = { sx: number; sy: number; explode: number };
+// fly/vw/vh: dispersione dei pezzi per tutta la pagina (solo nel canvas overlay).
+type Burst = { sx: number; sy: number; explode: number; fly?: number; vw?: number; vh?: number };
 const NEUTRAL_BURST: Burst = { sx: 1, sy: 1, explode: 0 };
 
 export function drawCube(
@@ -101,6 +103,7 @@ export function drawCube(
   eyes?: EyeState,
   moveDir: MoveDir | null = null,
   burst: Burst = NEUTRAL_BURST, // schiacciamento + esplosione guidati dallo scroll
+  fill = 0, // 0 → 1: facce piene di colore --fg (cubo dentro al buco)
 ) {
   const s = CONFIG.cubeSize;
   const { half, h, v } = cubeMetrics();
@@ -145,9 +148,17 @@ export function drawCube(
 
   // ── Spigoli: pieni se visibili, tratteggiati se nascosti ──
   const ex = clamp01(burst.explode);
+  const fly = clamp01(burst.fly ?? 0);
+  const flyOut = easeOutCubic(fly);
+  const vw = burst.vw ?? 0;
+  const vh = burst.vh ?? 0;
+  // Origine locale del disegno (stessa translate usata sopra).
+  const originX = x + e.bodyX * s;
+  const originY = y - hop + e.bodyY * s;
   const center = proj([0.5, 0.5, 0.5]);
 
-  ctx.strokeStyle = palette.fg;
+  // Con le facce piene gli spigoli diventano scuri, per tenere leggibile la forma.
+  ctx.strokeStyle = fill > 0 ? mixColors(palette.fg, palette.bg, 0.85 * fill) : palette.fg;
   ctx.lineWidth = 2;
   ctx.lineJoin = "round";
 
@@ -162,6 +173,37 @@ export function drawCube(
       (visible ? solid : hidden).push([a, b]);
     }
 
+    // Facce piene: sopra più chiara, poi sinistra e destra.
+    if (fill > 0) {
+      ctx.fillStyle = palette.fg;
+
+      for (let axis = 0; axis < 3; axis++) {
+        for (const side of [0, 1]) {
+          if (front[axis][side] <= 1e-6) continue;
+
+          const [i, j] = [0, 1, 2].filter((q) => q !== axis);
+          const corners: [number, number][] = [[0, 0], [1, 0], [1, 1], [0, 1]];
+
+          ctx.beginPath();
+          corners.forEach(([u, w], n) => {
+            const c: V3 = [0, 0, 0];
+            c[axis] = side;
+            c[i] = u;
+            c[j] = w;
+            const q = proj(rot(c, 0.5));
+            if (n === 0) ctx.moveTo(q.x, q.y);
+            else ctx.lineTo(q.x, q.y);
+          });
+          ctx.closePath();
+
+          ctx.globalAlpha = fill * (axis === 2 ? 1 : axis === 0 ? 0.78 : 0.6);
+          ctx.fill();
+        }
+      }
+
+      ctx.globalAlpha = 1;
+    }
+
     ctx.lineCap = "round";
 
     ctx.beginPath();
@@ -174,7 +216,7 @@ export function drawCube(
     ctx.beginPath();
     ctx.lineCap = "butt";
     ctx.setLineDash([5, 5]);
-    ctx.globalAlpha = 0.35;
+    ctx.globalAlpha = 0.35 * (1 - fill);
     for (const [a, b] of hidden) {
       ctx.moveTo(a.x, a.y);
       ctx.lineTo(b.x, b.y);
@@ -185,10 +227,12 @@ export function drawCube(
     ctx.globalAlpha = 1.0;
   } else {
     // ── Esplosione (guidata dallo scroll) ──
-    // Ogni spigolo vola via ruotando; il moto è schiacciato in verticale perché
-    // la fascia tra navbar e fine della Hero è bassa.
+    // Fase 1 (ex): gli spigoli si staccano e volano via ruotando, schiacciati in verticale.
+    // Fase 2 (fly): i pezzi proseguono verso punti sparsi di tutta la pagina e svaniscono.
+    // Tornando indietro le stesse formule li riportano da quei punti dentro il cubo.
     const out = easeOutCubic(ex);
-    const fade = 1 - smooth(clamp01((ex - 0.45) / 0.55));
+    const alphaFar = 1 - smooth(clamp01((fly - 0.5) / 0.5));
+    const shrink = 1 - 0.55 * flyOut;
 
     ctx.lineCap = "round";
 
@@ -205,19 +249,32 @@ export function drawCube(
       const r1 = hash(i * 3 + 1);
       const r2 = hash(i * 3 + 2);
 
+      // Posizione dopo la fase 1.
       const dist = out * (150 + 260 * r1);
-      const px0 = midX + (vx0 / len) * dist + (r2 - 0.5) * 60 * out;
-      const py0 = midY + (vy0 / len) * dist * 0.45 + ex * ex * 90 * (0.5 + r1);
+      const nearX = midX + (vx0 / len) * dist + (r2 - 0.5) * 60 * out;
+      const nearY = midY + (vy0 / len) * dist * 0.45 + ex * ex * 90 * (0.5 + r1);
 
-      const ang = (r2 - 0.5) * Math.PI * 3 * out;
+      // Fase 2: verso un punto lontano della pagina, con una piccola curva.
+      const farX = hash(i * 5 + 21) * vw - originX;
+      const farY = hash(i * 5 + 22) * vh - originY;
+      const dx = farX - nearX;
+      const dy = farY - nearY;
+      const dl = Math.hypot(dx, dy) || 1;
+      const curve = Math.sin(Math.PI * flyOut) * (r2 - 0.5) * 260;
+
+      const px0 = nearX + dx * flyOut - (dy / dl) * curve;
+      const py0 = nearY + dy * flyOut + (dx / dl) * curve;
+
+      const ang =
+        (r2 - 0.5) * Math.PI * 3 * out + (hash(i * 3 + 7) - 0.5) * Math.PI * 6 * flyOut;
       const ca = Math.cos(ang);
       const sa = Math.sin(ang);
-      const hx = (b.x - a.x) / 2;
-      const hy = (b.y - a.y) / 2;
+      const hx = ((b.x - a.x) / 2) * shrink;
+      const hy = ((b.y - a.y) / 2) * shrink;
       const rx0 = hx * ca - hy * sa;
       const ry0 = hx * sa + hy * ca;
 
-      ctx.globalAlpha = fade;
+      ctx.globalAlpha = alphaFar;
       ctx.beginPath();
       ctx.moveTo(px0 - rx0, py0 - ry0);
       ctx.lineTo(px0 + rx0, py0 + ry0);
@@ -235,16 +292,21 @@ export function drawCube(
       ctx.fill();
     }
 
-    // Scintille.
+    // Scintille: a raggiera, poi sparse per la pagina.
     ctx.fillStyle = palette.fg;
-    for (let i = 0; i < 26; i++) {
+    for (let i = 0; i < 40; i++) {
       const sparkAng = hash(i * 7 + 11) * Math.PI * 2;
       const d = out * (120 + 300 * hash(i * 7 + 12));
-      const size = (1 - ex) * (2 + 4 * hash(i * 7 + 13));
-      const sx0 = center.x + Math.cos(sparkAng) * d;
-      const sy0 = center.y + Math.sin(sparkAng) * d * 0.45 + ex * ex * 60;
+      const nearX = center.x + Math.cos(sparkAng) * d;
+      const nearY = center.y + Math.sin(sparkAng) * d * 0.45 + ex * ex * 60;
+      const farX = hash(i * 7 + 14) * vw - originX;
+      const farY = hash(i * 7 + 15) * vh - originY;
 
-      ctx.globalAlpha = clamp01(1 - ex * ex);
+      const sx0 = nearX + (farX - nearX) * flyOut;
+      const sy0 = nearY + (farY - nearY) * flyOut;
+      const size = (1.5 + 3.5 * hash(i * 7 + 13)) * (1 - 0.5 * ex) * (1 - 0.6 * flyOut);
+
+      ctx.globalAlpha = alphaFar * clamp01(ex * 6);
       ctx.fillRect(sx0 - size / 2, sy0 - size / 2, size, size);
     }
 
@@ -273,12 +335,12 @@ export function drawCube(
 
   // Visibilità: 1 a riposo, 0 con la faccia girata, overshoot al rientro.
   const vis = clamp01(facing(1, 0)) * (1 - w) + w * easeOutBack(ew);
-  const vx = vis;
-  const vy = 0.55 + 0.45 * vis;
+  const vx = vis * (1 - 0.5 * flyOut);
+  const vy = (0.55 + 0.45 * vis) * (1 - 0.5 * flyOut);
 
-  // Con l'esplosione gli occhi schizzano via e svaniscono.
+  // Con l'esplosione gli occhi schizzano via, si disperdono per la pagina e svaniscono.
   const eyeOut = easeOutCubic(ex);
-  const eyeAlpha = 1 - smooth(clamp01(ex * 1.6));
+  const eyeAlpha = 1 - smooth(clamp01((fly - 0.5) / 0.5));
 
   const k = 1 - e.merge;
   const cos = Math.cos(e.spin);
@@ -435,14 +497,21 @@ export function drawCube(
 
   // Occhi nascosti (faccia girata): niente da disegnare.
   if (vis > 0.03 && eyeAlpha > 0.01) {
-    ctx.fillStyle = palette.fg;
-    ctx.strokeStyle = palette.fg;
+    const nearL = { x: mx - px - eyeOut * 150, y: my - py - eyeOut * 70 + ex * ex * 90 };
+    const nearR = { x: mx + px + eyeOut * 150, y: my + py - eyeOut * 70 + ex * ex * 90 };
+    const farL = { x: hash(901) * vw - originX, y: hash(902) * vh - originY };
+    const farR = { x: hash(903) * vw - originX, y: hash(904) * vh - originY };
+
+    // Sul cubo pieno gli occhi prendono il colore dello sfondo.
+    const eyeColor = fill > 0 ? mixColors(palette.fg, palette.bg, fill) : palette.fg;
+    ctx.fillStyle = eyeColor;
+    ctx.strokeStyle = eyeColor;
     ctx.lineWidth = strokePx;
     ctx.globalAlpha = eyeAlpha;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
-    drawEye(mx - px - eyeOut * 150, my - py - eyeOut * 70 + ex * ex * 90, {
+    drawEye(nearL.x + (farL.x - nearL.x) * flyOut, nearL.y + (farL.y - nearL.y) * flyOut, {
       side: -1,
       sx: e.leftScaleX,
       sy: e.leftScaleY,
@@ -451,7 +520,7 @@ export function drawCube(
       lid: e.leftLid,
     });
 
-    drawEye(mx + px + eyeOut * 150, my + py - eyeOut * 70 + ex * ex * 90, {
+    drawEye(nearR.x + (farR.x - nearR.x) * flyOut, nearR.y + (farR.y - nearR.y) * flyOut, {
       side: 1,
       sx: e.rightScaleX,
       sy: e.rightScaleY,

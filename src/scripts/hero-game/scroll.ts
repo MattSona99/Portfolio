@@ -5,6 +5,10 @@ import type { EyeState } from './animations';
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 const smooth = (t: number) => t * t * (3 - 2 * t);
 
+// Costante di tempo del filtro passa-basso (s) per i valori che NON devono combaciare
+// al pixel con i bordi del DOM: filtra la irregolarità con cui arriva lo scroll.
+const TAU = 0.09;
+
 export const NEUTRAL_FX: HeroFx = {
   progress: 0,
   focused: true,
@@ -15,19 +19,25 @@ export const NEUTRAL_FX: HeroFx = {
   squashX: 1,
   squashY: 1,
   explode: 0,
+  fly: 0,
+  wave: 0,
+  blastX: 0,
+  blastY: 0,
   fear: 0,
   shake: 0,
   shakeX: 0,
   shakeY: 0,
   gridV: 1,
   gridAlpha: 1,
+  worldAlpha: 1,
 };
 
 // Misura ogni frame la "fascia" libera della Hero:
 //   soffitto  = bordo basso della navbar (fissa, si allarga con lo scroll)
 //   pavimento = fine del contenitore Hero (sale mentre si scorre)
 // Quando la fascia diventa più bassa del cubo, il cubo viene schiacciato tra i due
-// e, se la fascia continua a ridursi, esplode. Tutto è una funzione dello scroll:
+// e, se la fascia continua a ridursi, esplode; i pezzi poi si disperdono per tutta la
+// pagina (canvas overlay) e svaniscono. Tutto è una funzione dello scroll:
 // tornando indietro l'animazione si riavvolge da sola.
 //
 // `shell` = elemento passato a mountHeroGame (il contenitore della Hero).
@@ -39,6 +49,9 @@ export function createHeroScroll(shell: HTMLElement) {
 
   let nav: HTMLElement | null = null;
   let focused = true;
+
+  // Valori filtrati nel tempo.
+  const sm = { primed: false, t: 0, ground: 0, gridV: 1, gridAlpha: 1, fear: 0 };
 
   const resolveNav = () => {
     if (nav && nav.isConnected) return nav;
@@ -72,9 +85,16 @@ export function createHeroScroll(shell: HTMLElement) {
     const bottom = Math.min(rect.bottom, viewport);
     const bandTop = top - rect.top;
     const bandBottom = bottom - rect.top;
-    const bandH = Math.max(0, bandBottom - bandTop);
+    const rawBand = bottom - top; // può diventare negativo a Hero uscita
+    const bandH = Math.max(0, rawBand);
 
     const { h, fullH } = cubeMetrics();
+
+    // ── Filtro temporale ──
+    const dt = sm.primed ? Math.min(Math.max(time - sm.t, 0), 50) / 1000 : 0;
+    const k = sm.primed ? 1 - Math.exp(-dt / TAU) : 1;
+    const lp = (cur: number, target: number) => (sm.primed ? cur + (target - cur) * k : target);
+    sm.t = time;
 
     // ── Focus (con un filo di isteresi) ──
     const progress = clamp01(window.scrollY / Math.max(1, shell.offsetHeight));
@@ -86,10 +106,29 @@ export function createHeroScroll(shell: HTMLElement) {
 
     // r = fascia / altezza del cubo. Se la Hero è ancora "a fuoco" non schiacciamo
     // mai (es. finestre molto basse).
-    const r = progress > S.focusRegain ? bandH / fullH : 99;
+    const active = progress > S.focusRegain;
+    const r = active ? bandH / fullH : 99;
 
     const press = clamp01((1 - r) / (1 - S.minSquash));
-    const explode = clamp01((S.minSquash - r) / (S.minSquash - S.explodeEnd));
+
+    // `over` = pixel di scroll oltre il punto in cui parte l'esplosione.
+    const overEx = (S.minSquash - S.explodeEnd) * fullH;
+    const over = active ? S.minSquash * fullH - rawBand : -1e9;
+    const explode = clamp01(over / overEx);
+
+    // Distanza di dispersione: se la pagina finisce prima, i pezzi arrivano
+    // comunque in fondo alla corsa (e quindi svaniscono).
+    const maxScroll = Math.max(0, document.documentElement.scrollHeight - viewport);
+    const overMax = over + (maxScroll - window.scrollY);
+    const blastPx = Math.max(S.blastMin, Math.min(S.blastDistance * viewport, overMax - overEx - 20));
+    const fly = clamp01((over - overEx) / blastPx);
+    const wave = clamp01(over / (overEx + 0.55 * blastPx));
+
+    // Origine dell'esplosione (viewport): dove si trova il cubo schiacciato nell'istante
+    // in cui parte lo scoppio. È solo geometria, quindi il passaggio tra il canvas della
+    // Hero e l'overlay è continuo in entrambi i sensi.
+    const blastX = rect.left + (rect.width || width) / 2;
+    const blastY = navBottom + S.minSquash * fullH - h;
 
     // ── Schiacciamento: il cubo riempie esattamente la fascia ──
     const sy0 = Math.min(1, Math.max(S.minSquash, r));
@@ -99,19 +138,24 @@ export function createHeroScroll(shell: HTMLElement) {
     const squashY = sy0 + (1 - sy0) * pop;
     const squashX = sx0 + (1 - sx0) * pop;
 
-    // ── Posizione: dal layout base al centro della fascia, poi appoggiato al pavimento ──
+    // ── Posizione verticale del cubo (rispetto al layout base) ──
+    // Libero: segue il centro della fascia, filtrato nel tempo (niente scatti).
+    // Avvicinandosi allo schiacciamento (r da 1.7 a 1) recupera gradualmente il ritardo del
+    // filtro e si aggancia ai bordi reali: da r = 1 è incollato al pavimento, senza filtro.
     const baseGround = baseGroundY(height);
     const pressedGround = bandBottom - h - Math.max(0, (bandH - fullH) / 2);
     const follow = Math.max(
       smooth(clamp01((progress - S.focusRegain) / 0.25)),
       clamp01((2 - r) / 0.75),
     );
-    const groundY = baseGround + (pressedGround - baseGround) * follow;
+    sm.ground = lp(sm.ground, baseGround + (pressedGround - baseGround) * follow);
+    const pin = smooth(clamp01((1.7 - r) / 0.7));
+    const groundY = sm.ground + (pressedGround - sm.ground) * pin;
 
     // ── Paura e tremore ──
     const fearR = clamp01((2 - r) / 1.1);
     const fearP = clamp01((progress - S.focusLoss) / 0.25) * 0.55;
-    const fear = Math.max(fearR, fearP);
+    sm.fear = lp(sm.fear, Math.max(fearR, fearP));
 
     const shake =
       smooth(clamp01((1.4 - r) / (1.4 - S.minSquash))) *
@@ -121,10 +165,18 @@ export function createHeroScroll(shell: HTMLElement) {
     const shakeX = (Math.sin(ts * 71) + Math.sin(ts * 43) * 0.6) * shake * 3.2;
     const shakeY = Math.sin(ts * 59 + 1.3) * shake * 2.2;
 
-    // ── Griglia: si comprime, si illumina sotto pressione, poi svanisce ──
-    const gridV = 1 - 0.6 * press + 0.6 * press * smooth(clamp01(explode * 2));
+    // ── Griglia: ferma nella Hero; si comprime sul posto, si illumina, poi svanisce ──
+    const gridVRaw = 1 - 0.6 * press + 0.6 * press * smooth(clamp01(explode * 2));
     const gridFade = 1 - smooth(clamp01((explode - 0.4) / 0.6));
-    const gridAlpha = (1 + 1.4 * press) * (1 - 0.4 * dim) * gridFade;
+    const gridAlphaRaw = (1 + 1.4 * press) * (1 - 0.4 * dim) * gridFade;
+    sm.gridV = lp(sm.gridV, gridVRaw);
+    sm.gridAlpha = lp(sm.gridAlpha, gridAlphaRaw);
+
+    // Guida e buco svaniscono appena la Hero perde il focus: quando sono spariti il gioco
+    // può ripartire da capo senza che si veda alcun salto.
+    const worldAlpha = (1 - smooth(clamp01(dim * 3))) * gridFade;
+
+    sm.primed = true;
 
     return {
       progress,
@@ -136,12 +188,17 @@ export function createHeroScroll(shell: HTMLElement) {
       squashX,
       squashY,
       explode,
-      fear,
+      fly,
+      wave,
+      blastX,
+      blastY,
+      fear: sm.fear,
       shake,
       shakeX,
       shakeY,
-      gridV,
-      gridAlpha,
+      gridV: sm.gridV,
+      gridAlpha: sm.gridAlpha,
+      worldAlpha,
     };
   }
 

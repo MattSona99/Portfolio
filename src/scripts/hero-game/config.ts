@@ -9,12 +9,35 @@ export const CONFIG = {
   gridPadding: 3,
   centerOffsetY: -24, // il cubo sta un po' sopra il centro del canvas
 
+  // Percorso guidato verso la TILE BUCO (generato a caso a ogni caricamento della pagina).
+  course: {
+    length: 20, // movimenti dalla partenza al buco
+    minHoleDistance: 6, // distanza minima (in tile) tra partenza e buco
+    revealDistance: 3, // il buco compare quando il cubo è a questa distanza (in tile)
+    litMs: 1000, // quanto dura il lampo verde di una tile attivata
+    activatedAlpha: 0.1, // tenue colore che resta sulle tile attivate (0 = nessuno)
+    waveStepMs: 60, // onda di luce lungo il percorso quando è completo: ritardo tra una tile e l'altra
+  },
+  guide: {
+    dash: 12, // lunghezza del tratto (px)
+    gap: 10, // spazio tra i tratti (px)
+    speed: 46, // velocità con cui scorrono i tratti verso il buco (px/s)
+    width: 3,
+  },
+  hole: {
+    levels: 5, // pareti annidate che danno profondità
+    inset: 0.9, // grandezza del buco rispetto alla tile
+    sinkRatio: 1, // 1 = il cubo scende fino ad avere la faccia superiore a filo con il pavimento
+  },
+
   // Scroll → focus, schiacciamento ed esplosione. `progress` = scrollY / altezza Hero.
   scroll: {
     focusLoss: 0.12, // oltre questo valore la Hero perde il focus (input disabilitato)
     focusRegain: 0.1, // sotto questo valore torna il focus e il gioco riparte da capo
     minSquash: 0.6, // altezza minima del cubo schiacciato (frazione); sotto parte l'esplosione
     explodeEnd: 0.2, // frazione di altezza della fascia a cui l'esplosione è completa
+    blastDistance: 0.9, // scroll (in altezze di viewport) in cui i pezzi si disperdono per la pagina
+    blastMin: 120, // scroll minimo (px) per la dispersione, se la pagina finisce prima
   },
 } as const;
 

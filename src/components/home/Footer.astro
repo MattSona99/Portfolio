@@ -1,0 +1,121 @@
+---
+const groups = [
+  {
+    title: "Explore",
+    links: [
+      { label: "About", href: "/about" },
+      { label: "Manifesto", href: "/manifest" },
+      { label: "Curriculum", href: "/curriculum" },
+      { label: "GitHub", href: "/github" },
+    ],
+  },
+  {
+    title: "Support",
+    links: [
+      { label: "FAQ", href: "/faq" },
+      { label: "Contact", href: "/contact" },
+      { label: "Feedback", href: "/feedback" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
+      { label: "Cookies", href: "/cookies" },
+      { label: "Accessibility", href: "/accessibility" },
+    ],
+  },
+];
+---
+
+<footer data-site-footer class="w-full bg-bg text-fg">
+  <!-- Scena vuota, nello stile della Hero -->
+  <section
+    data-footer-stage
+    aria-label="Footer visual"
+    class="relative -mt-px h-[100svh] min-h-[32rem] w-full overflow-hidden border-y border-line"
+  >
+    <div
+      data-footer-visual
+      aria-hidden="true"
+      class="absolute inset-0 bg-bg"
+    ></div>
+  </section>
+
+  <!-- Informazioni -->
+  <section data-footer-info aria-label="Site information" class="footer-wrap">
+    <div class="grid grid-cols-2 gap-x-5 gap-y-8 border-b border-line py-7 md:grid-cols-4 md:gap-x-8 md:py-8">
+      <div class="footer-column">
+        <h2 class="footer-label">Navigate</h2>
+        <a class="footer-link" href="/">Home</a>
+        <a class="footer-link" href="/#cards-section">Projects</a>
+        <a class="footer-link" href="/manifest">Manifesto</a>
+      </div>
+
+      {groups.map((group) => (
+        <div class="footer-column">
+          <h2 class="footer-label">{group.title}</h2>
+          {group.links.map((link) => (
+            <a class="footer-link" href={link.href}>{link.label}</a>
+          ))}
+        </div>
+      ))}
+    </div>
+
+    <div class="flex flex-col justify-between gap-3 py-4 text-xs text-fg/50 sm:flex-row sm:items-center">
+      <span>© {new Date().getFullYear()} Matteo Sonaglioni</span>
+      <a class="footer-link" href="#top">Back to top ↑</a>
+    </div>
+  </section>
+</footer>
+
+<style>
+  .footer-wrap {
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: 1rem;
+    font-family: "Bespoke", sans-serif;
+  }
+
+  .footer-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+
+  .footer-label {
+    margin: 0 0 0.25rem;
+    color: var(--mark);
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .footer-link {
+    width: fit-content;
+    color: color-mix(in srgb, var(--fg) 72%, transparent);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    transition: color 200ms ease;
+  }
+
+  .footer-link:hover {
+    color: var(--fg);
+  }
+
+  @media (min-width: 48rem) {
+    .footer-wrap {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .footer-link {
+      transition: none;
+    }
+  }
+</style>

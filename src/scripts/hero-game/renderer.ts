@@ -1,35 +1,14 @@
 import { drawCube } from './cube';
 import { drawInfiniteGrid, project } from './grid';
+import { drawGuide } from './guide';
+import { clipAboveRim, drawHole, drawRim } from './hole';
+import { drawLitTiles, drawWall } from './tiles';
+import { mixColors } from './color';
 import { readPalette } from './palette';
-import { TILE, baseGroundY, cubeMetrics } from './config';
-import type { GameState, Palette } from './types';
+import { CONFIG, baseGroundY, cubeMetrics } from './config';
+import type { GameState } from './types';
 import { getRenderPosition } from './animations';
 import type { EyeState } from './animations';
-
-// Onda d'urto isometrica che parte dal cubo quando esplode.
-function drawShockwave(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  e: number,
-  vScale: number,
-  palette: Palette,
-) {
-  const t = Math.min(1, e);
-  const out = 1 - Math.pow(1 - t, 3);
-  const rx = 80 + out * 900;
-  const ry = rx * (TILE.h / TILE.w) * vScale;
-  const ramp = Math.min(1, t * 10);
-
-  ctx.save();
-  ctx.globalAlpha = (1 - t) * 0.7 * ramp;
-  ctx.strokeStyle = palette.fg;
-  ctx.lineWidth = 1 + (1 - t) * 3;
-  ctx.beginPath();
-  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
-}
 
 export function render(
   ctx: CanvasRenderingContext2D,
@@ -40,64 +19,96 @@ export function render(
 ) {
   const palette = readPalette();
   const fx = state.fx;
+  const hole = state.hole;
 
   ctx.clearRect(0, 0, width, height);
 
   ctx.fillStyle = palette.bg;
   ctx.fillRect(0, 0, width, height);
 
-  const { footY } = cubeMetrics();
+  const { footY, v } = cubeMetrics();
 
-  // Punto dello schermo in cui la camera "guarda" (centro a terra del cubo).
-  // Con lo scroll si sposta verso il centro della fascia libera della Hero.
-  const centerX = width / 2;
-  const centerY = Number.isFinite(fx.groundY) ? fx.groundY : baseGroundY(height);
-
-  // Dove cade a schermo la tile (0, 0): la camera è al centro, quindi tutto il
-  // mondo scorre di quanto la camera si è allontanata dall'origine.
+  // La griglia resta ancorata alla Hero (centro a terra della tile (0, 0) a riposo):
+  // con lo scroll si muove solo insieme alla pagina, quindi niente flickering.
+  // La camera continua a seguire il cubo quando si gioca.
+  const baseGround = baseGroundY(height);
   const cam = project(state.camera, 0, 0, fx.gridV);
-  const originX = centerX - cam.x;
-  const originY = centerY - cam.y;
+  const originX = width / 2 - cam.x;
+  const originY = baseGround - cam.y;
 
-  drawInfiniteGrid(
-    ctx,
-    width,
-    height,
-    originX + fx.shakeX * 0.4,
-    originY + fx.shakeY * 0.4,
-    state.camera,
-    fx.gridV,
-    fx.gridAlpha,
-  );
+  // Origine di griglia, guida e buco (con un po' del tremore da schiacciamento).
+  const gx = originX + fx.shakeX * 0.4;
+  const gy = originY + fx.shakeY * 0.4;
 
-  // Centro a terra del cubo (interpolato durante il salto), relativo alla camera.
+  drawInfiniteGrid(ctx, width, height, gx, gy, state.camera, fx.gridV, fx.gridAlpha);
+
+  // Tile attivate (lampo verde), guida verde verso il buco e, quando il cubo si avvicina, il buco.
+  drawLitTiles(ctx, state.course, hole, gx, gy, fx.gridV, performance.now(), palette, fx.worldAlpha);
+  drawGuide(ctx, state.course, hole.progress, gx, gy, fx.gridV, state.lastFrame, palette, fx.worldAlpha);
+
+  if (hole.reveal > 0) {
+    const hp = project(state.course.hole, gx, gy, fx.gridV);
+    drawHole(ctx, hp.x, hp.y, fx.gridV, hole.reveal, palette, fx.worldAlpha, hole.unlock, hole.deny);
+  }
+
+  // Dall'esplosione in poi il cubo e i suoi pezzi sono disegnati dall'overlay a schermo intero.
+  if (fx.explode > 0) return;
+
+  // Il cubo "galleggia" sopra la griglia: segue il centro della fascia libera e,
+  // sotto pressione, si appoggia al pavimento (fx.groundY).
+  const floatY = Number.isFinite(fx.groundY) ? fx.groundY - baseGround : 0;
   const ground = project(getRenderPosition(state), originX, originY, fx.gridV);
+  const groundY = ground.y + floatY;
+
+  // Tuffo nel buco: il cubo scende e ciò che passa sotto il bordo anteriore sparisce.
+  const sinking = hole.sink > 0;
+
+  // Il cubo diventa rosso quando urta il muro invisibile.
+  const cubePalette = hole.tint > 0.003
+    ? { ...palette, fg: mixColors(palette.fg, palette.danger, hole.tint) }
+    : palette;
+
+  // Muro invisibile: dietro al cubo se è sul lato lontano, davanti se è sul lato vicino.
+  let wall: (() => void) | null = null;
+  if (hole.wall > 0.003 && hole.wallFrom) {
+    const dir = { x: state.course.hole.x - hole.wallFrom.x, y: state.course.hole.y - hole.wallFrom.y };
+    const wp = project(hole.wallFrom, originX, originY, fx.gridV);
+    wall = () => drawWall(ctx, wp.x, wp.y + floatY, dir, fx.gridV, hole.wall * fx.worldAlpha, palette);
+    if (dir.x + dir.y < 0) {
+      wall();
+      wall = null;
+    }
+  }
+  const sinkPx = hole.sink * v * CONFIG.hole.sinkRatio;
 
   ctx.save();
 
-  // Sotto pressione il cubo (e i detriti) non devono uscire dalla fascia
-  // tra navbar e fine della Hero.
+  // Sotto pressione il cubo non deve uscire dalla fascia tra navbar e fine della Hero.
   if (fx.press > 0) {
     ctx.beginPath();
     ctx.rect(0, fx.bandTop, width, Math.max(0, fx.bandBottom - fx.bandTop));
     ctx.clip();
   }
 
-  if (fx.explode > 0) {
-    drawShockwave(ctx, ground.x, ground.y, fx.explode, fx.gridV, palette);
-  }
+  if (sinking) clipAboveRim(ctx, ground.x, groundY, fx.gridV);
 
   drawCube(
     ctx,
     ground.x + fx.shakeX,
-    ground.y - footY + fx.shakeY,
-    palette,
+    groundY - footY + fx.shakeY + sinkPx,
+    cubePalette,
     state.roll,
     state.hop,
     eyes,
     state.moveDir,
-    { sx: fx.squashX, sy: fx.squashY, explode: fx.explode },
+    { sx: fx.squashX, sy: fx.squashY, explode: 0 },
+    hole.fill,
   );
 
   ctx.restore();
+
+  wall?.();
+
+  // Bordo anteriore del buco, sopra il cubo.
+  if (sinking) drawRim(ctx, ground.x, groundY, fx.gridV, palette, fx.worldAlpha);
 }

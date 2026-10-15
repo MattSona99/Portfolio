@@ -3,6 +3,9 @@ import { CONFIG } from './config';
 import { bindKeyboard } from './input';
 import { render } from './renderer';
 import { createHeroScroll, applyFearEyes, NEUTRAL_FX } from './scroll';
+import { createBlastOverlay } from './overlay';
+import { gsap } from 'gsap';
+import { generateCourse, createHoleState, canMove, handleArrival, handleDenied, resetCourse } from './course';
 import { createEyeState, createEyeAnimator, getRenderPosition } from './animations';
 
 export function mountHeroGame(shell: HTMLElement): () => void {
@@ -13,8 +16,13 @@ export function mountHeroGame(shell: HTMLElement): () => void {
 
   if (!canvas || !ctx) return () => {};
 
+  const course = generateCourse(); // percorso casuale: cambia a ogni refresh della pagina
+
   const state: GameState = {
     fx: { ...NEUTRAL_FX },
+    course,
+    hole: createHoleState(course),
+    bumping: false,
     position: { x: 0, y: 0 },
     camera: { x: 0, y: 0 },
     target: null,
@@ -34,20 +42,41 @@ export function mountHeroGame(shell: HTMLElement): () => void {
   let raf = 0;
   let destroyed = false;
 
+  // Il canvas è largo quanto la finestra e centrato sulla Hero (che ha overflow-hidden):
+  // quando la Hero si allarga con lo scroll (.wrap → 100%) il canvas NON va ridimensionato.
+  // Prima ogni cambio di larghezza riallocava il bitmap, che così veniva svuotato dopo il
+  // disegno del frame e il browser mostrava un frame vuoto → flickering.
   const resize = () => {
     const rect = shell.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    width = rect.width;
+    width = Math.max(document.documentElement.clientWidth, Math.ceil(rect.width));
     height = rect.height;
 
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
+    const pixelW = Math.round(width * dpr);
+    const pixelH = Math.round(height * dpr);
+    const reallocated = canvas.width !== pixelW || canvas.height !== pixelH;
 
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    if (reallocated) {
+      canvas.width = pixelW;
+      canvas.height = pixelH;
+    }
+
+    Object.assign(canvas.style, {
+      position: 'absolute',
+      top: '0',
+      left: '50%',
+      width: `${width}px`,
+      height: `${height}px`,
+      maxWidth: 'none',
+      transform: 'translateX(-50%)',
+    });
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Assegnare width/height svuota il canvas: ridisegna subito, nello stesso frame,
+    // così non viene mai mostrato un frame vuoto.
+    if (reallocated) render(ctx, width, height, state, eyes);
   };
 
   const observer = new ResizeObserver(resize);
@@ -56,12 +85,28 @@ export function mountHeroGame(shell: HTMLElement): () => void {
 
   // Scroll: schiacciamento, esplosione e focus della Hero.
   const heroScroll = createHeroScroll(shell);
+  // Canvas a tutto schermo per i pezzi dell'esplosione che escono dalla Hero.
+  const blast = createBlastOverlay();
   let focused = true;
-  let needsReset = false;
+  let pendingReset = false;
 
   const unbindInput = bindKeyboard(shell, state, {
     // Senza focus (Hero scrollata via) i tasti freccia non muovono il cubo.
-    isEnabled: () => focused,
+    // Dopo il tuffo nel buco il gioco si ferma (per ora).
+    isEnabled: () => focused && !state.hole.done,
+    // Il buco si apre solo dopo aver attivato in ordine tutte le tile del percorso.
+    canMove: (next) => canMove(state, next),
+    // Avanzamento sulla guida, comparsa del buco e tuffo.
+    onArrive: (_pos, from) => handleArrival(state, from, { onImpact: () => eyeAnimator.land() }),
+    // Urto contro il muro invisibile: cubo rosso, occhi ">  <" e squash.
+    onBump: (from) => {
+      handleDenied(state, from);
+      eyes.shape = 'chevron';
+      eyeAnimator.land();
+      gsap.delayedCall(0.9, () => {
+        eyes.shape = 'round';
+      });
+    },
     // Muovere il cubo annulla le espressioni idle in corso.
     onMoveStart: () => eyeAnimator.interrupt(),
     onLand: () => eyeAnimator.land(),
@@ -90,38 +135,39 @@ export function mountHeroGame(shell: HTMLElement): () => void {
       focused = fx.focused;
 
       // Perso il focus: stop alle espressioni idle (ora il cubo ha paura).
-      // Ritrovato: occhi puliti, idle riattivato e il gioco riparte da capo.
+      // Ritrovato: occhi puliti e idle riattivato.
       eyeAnimator.stop();
 
       if (focused) {
-        needsReset = true;
         eyeAnimator.start();
         eyeAnimator.land();
+      } else {
+        pendingReset = true;
       }
     }
 
-    if (needsReset && !state.target) {
-      // Torna alla posizione iniziale. La griglia è periodica: tenendo la camera
-      // relativa alla nuova posizione, a schermo non si vede nessun salto.
-      state.camera.x -= state.position.x;
-      state.camera.y -= state.position.y;
-      state.position = { x: 0, y: 0 };
-      needsReset = false;
+    // Il gioco riparte da capo (cubo in (0, 0), buco nascosto) solo quando guida e buco
+    // sono già svaniti con lo scroll: la griglia è periodica, quindi non si vede nessun salto.
+    if (pendingReset && !focused && fx.worldAlpha < 0.02 && !state.target) {
+      resetCourse(state);
+      pendingReset = false;
     }
 
     if (!focused) applyFearEyes(eyes, fx, time);
 
     if (state.target) {
       // Salto: ribaltamento di 90° + arco, entrambi guidati da moveProgress.
-      const t = Math.min(state.moveProgress, 1);
+      const t = Math.min(Math.max(state.moveProgress, 0), 1);
       state.roll = t;
-      state.hop = Math.sin(t * Math.PI) * CONFIG.hopHeight;
+      // Nell'urto il cubo si inclina verso il muro ma non fa il salto intero.
+      state.hop = Math.sin(t * Math.PI) * CONFIG.hopHeight * (state.bumping ? 0.2 : 1);
     } else {
       state.roll = 0;
-      state.hop = focused ? Math.abs(Math.sin(time / 450)) * 2 : 0;
+      state.hop = focused && !state.hole.done ? Math.abs(Math.sin(time / 450)) * 2 : 0;
     }
 
     render(ctx, width, height, state, eyes);
+    blast.draw(state.fx, eyes);
 
     raf = requestAnimationFrame(frame);
   };
@@ -144,6 +190,7 @@ export function mountHeroGame(shell: HTMLElement): () => void {
     observer.disconnect();
     themeObserver.disconnect();
     unbindInput();
+    blast.destroy();
 
     // Ferma timer e timeline GSAP.
     eyeAnimator.stop();

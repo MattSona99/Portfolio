@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import Box from '../ui/Box.astro';
 import githubImg from '../../assets/cards/github.png';
 import curriculumImg from '../../assets/cards/curriculum.png';
@@ -11,227 +10,106 @@ interface Props {
   accent: 'github' | 'curriculum' | 'manifest';
 }
 const { title, href, accent } = Astro.props;
+
+const patternMap = {
+  github: githubImg.src,
+  curriculum: curriculumImg.src,
+  manifest: manifestImg.src,
+};
+
+const chars = title.split('');
 ---
+
 <Box
   as="a"
   href={href}
   data-card
   data-card-type={accent}
   style={`--accent: var(--${accent})`}
-  class="flex h-full min-h-0 flex-col overflow-hidden"
+  class="group relative flex h-full min-h-0 flex-col overflow-hidden bg-bg select-none"
 >
-  <div class="grid h-14 shrink-0 place-items-center border-b border-line text-sm font-bold tracking-[0.2em] uppercase md:text-base">
-    {title}
+  {/* --- BARRA SUPERIORE (Titolo animato) --- */}
+  <div class="relative z-20 grid h-14 shrink-0 place-items-center border-b border-line bg-bg px-4">
+    <div 
+      data-card-title 
+      class="relative overflow-hidden font-bespoke text-sm font-bold tracking-[0.22em] uppercase leading-none py-1 md:text-base"
+    >
+      {/* Riga 1: Lettere standard */}
+      <div class="flex justify-center">
+        {chars.map((char) => (
+          <span data-char-top class="inline-block will-change-transform">
+            {char === ' ' ? '\u00A0' : char}
+          </span>
+        ))}
+      </div>
+
+      {/* Riga 2: Lettere colorate */}
+      <div class="pointer-events-none absolute inset-0 flex justify-center py-1 text-[var(--accent)]" aria-hidden="true">
+        {chars.map((char) => (
+          <span data-char-bottom class="inline-block will-change-transform">
+            {char === ' ' ? '\u00A0' : char}
+          </span>
+        ))}
+      </div>
+    </div>
   </div>
-  
-  <div 
-    class="card-image-wrap relative min-h-0 flex-1 w-full overflow-hidden bg-bg cursor-pointer"
-    style="contain: layout paint;"
-  >
-    {/* --- 1. GITHUB CARD (Water CRT) --- */}
-    {accent === 'github' && (
-      <>
-        <div class="image-content-group absolute inset-0 w-full h-full">
-          <Image 
-            src={githubImg} 
-            alt="GitHub" 
-            width={800}
-            format="webp"
-            quality={85}
-            draggable="false"
-            class="absolute inset-0 h-full w-full object-cover object-center pointer-events-none"
-            style="filter: contrast(1.2) saturate(0.8) brightness(0.9);" 
-          />
-          
-          <div 
-            class="pointer-events-none absolute inset-0 z-20"
-            style="
-              background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.15) 50%);
-              background-size: 100% 4px;
-              box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.6);
-            "
-          ></div>
-        </div>
 
-        <svg class="absolute w-0 h-0 pointer-events-none" aria-hidden="true" focusable="false">
-          <defs>
-            <filter id="waterFilter" color-interpolation-filters="sRGB">
-              <feTurbulence type="fractalNoise" baseFrequency="0 0" numOctaves="1" result="noise" />
-              <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-          </defs>
-        </svg>
-      </>
-    )}
+  {/* --- CORPO DELLA CARD --- */}
+  <div class="relative grid min-h-0 flex-1 place-items-center overflow-hidden p-6">
+    
+    {/* 1. PATTERN VETTORIALE RIPETUTO (Si fonde col colore di sfondo) */}
+    <div 
+      data-card-pattern
+      class="pointer-events-none absolute -inset-12 z-0 opacity-[0.04] dark:opacity-[0.05] dark:invert-0 invert will-change-transform"
+      style={`
+        background-image: url('${patternMap[accent]}');
+        background-repeat: repeat;
+        background-size: 220px;
+        mix-blend-mode: luminosity;
+      `}
+    ></div>
 
-    {/* --- 2. CURRICULUM CARD (Cyber-Scanner + VHS Glitch Tear + RGB Split) --- */}
-    {accent === 'curriculum' && (
-      <>
-        <div class="curriculum-content-group absolute inset-0 w-full h-full">
-          <Image 
-            src={curriculumImg} 
-            alt="Curriculum" 
-            width={800}
-            format="webp"
-            quality={85}
-            draggable="false"
-            class="absolute inset-0 h-full w-full object-cover object-center pointer-events-none"
-            style="filter: contrast(1.2) saturate(0.8) brightness(0.9);"
-          />
-          
-          <div 
-            class="pointer-events-none absolute inset-0 z-10 bg-[#facc15] opacity-[0.3]" 
-            style="mix-blend-mode: multiply;"
-          ></div>
+    {/* 2. Sipario di sfondo che sale in hover (colora anche il pattern sottostante!) */}
+    <div 
+      data-card-bg 
+      class="pointer-events-none absolute inset-0 z-0 origin-bottom scale-y-0 bg-[var(--accent)] opacity-[0.08] mix-blend-overlay will-change-transform"
+    ></div>
 
-          <div 
-            class="scanner-beam pointer-events-none absolute inset-0 z-15 opacity-0"
-            style="
-              background: linear-gradient(
-                to bottom,
-                transparent calc(var(--scan-y, 50%) - 45px),
-                rgba(250, 204, 21, 0.08) calc(var(--scan-y, 50%) - 12px),
-                rgba(250, 204, 21, 0.65) var(--scan-y, 50%),
-                rgba(250, 204, 21, 0.08) calc(var(--scan-y, 50%) + 12px),
-                transparent calc(var(--scan-y, 50%) + 45px)
-              );
-            "
-          ></div>
+    {/* 3. Kinetic Typography Stack Centrato */}
+    <div class="pointer-events-none relative z-10 grid place-items-center text-center">
+      
+      {/* Eco Superiore (Outline) */}
+      <span 
+        data-center-echo-top
+        class="col-start-1 row-start-1 font-bespoke text-3xl font-extrabold tracking-tight uppercase opacity-0 will-change-transform sm:text-4xl lg:text-5xl"
+        style="-webkit-text-stroke: 1px var(--accent); color: transparent;"
+        aria-hidden="true"
+      >
+        {title}
+      </span>
 
-          <div 
-            class="pointer-events-none absolute inset-0 z-20"
-            style="
-              background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.15) 50%);
-              background-size: 100% 4px;
-              box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.6);
-            "
-          ></div>
-        </div>
+      {/* Eco Inferiore (Outline) */}
+      <span 
+        data-center-echo-bottom
+        class="col-start-1 row-start-1 font-bespoke text-3xl font-extrabold tracking-tight uppercase opacity-0 will-change-transform sm:text-4xl lg:text-5xl"
+        style="-webkit-text-stroke: 1px var(--accent); color: transparent;"
+        aria-hidden="true"
+      >
+        {title}
+      </span>
 
-        <svg class="absolute w-0 h-0 pointer-events-none" aria-hidden="true" focusable="false">
-          <defs>
-            <filter id="cyberScanFilter" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
-              <feTurbulence 
-                class="scan-turbulence"
-                type="fractalNoise" 
-                baseFrequency="0.002 0.18" 
-                numOctaves="1" 
-                seed="1" 
-                result="sliceNoise" 
-              />
-              <feDisplacementMap 
-                class="scan-displacement"
-                in="SourceGraphic" 
-                in2="sliceNoise" 
-                scale="0" 
-                xChannelSelector="R" 
-                yChannelSelector="G" 
-                result="displaced"
-              />
-              <feColorMatrix in="displaced" type="matrix"
-                values="1 0 0 0 0
-                        0 0 0 0 0
-                        0 0 0 0 0
-                        0 0 0 1 0" result="red" />
-              <feOffset class="rgb-red-offset" in="red" dx="0" dy="0" result="redShifted" />
+      {/* Scritta Centrale Principale */}
+      <div 
+        data-center-main
+        class="col-start-1 row-start-1 flex justify-center font-bespoke text-3xl font-extrabold tracking-tight uppercase opacity-15 will-change-transform sm:text-4xl lg:text-5xl"
+      >
+        {chars.map((char) => (
+          <span data-center-char class="inline-block will-change-transform">
+            {char === ' ' ? '\u00A0' : char}
+          </span>
+        ))}
+      </div>
 
-              <feColorMatrix in="displaced" type="matrix"
-                values="0 0 0 0 0
-                        0 1 0 0 0
-                        0 0 0 0 0
-                        0 0 0 1 0" result="green" />
-
-              <feColorMatrix in="displaced" type="matrix"
-                values="0 0 0 0 0
-                        0 0 0 0 0
-                        0 0 1 0 0
-                        0 0 0 1 0" result="blue" />
-              <feOffset class="rgb-blue-offset" in="blue" dx="0" dy="0" result="blueShifted" />
-
-              <feBlend mode="screen" in="redShifted" in2="green" result="rg" />
-              <feBlend mode="screen" in="rg" in2="blueShifted" />
-            </filter>
-          </defs>
-        </svg>
-      </>
-    )}
-
-    {/* --- 3. MANIFEST CARD (Super-Optimized Crimson Black Hole) --- */}
-    {accent === 'manifest' && (
-      <>
-        <div class="bh-content-group absolute inset-0 w-full h-full">
-          <Image 
-            src={manifestImg} 
-            alt="Manifest" 
-            width={800}
-            format="webp"
-            quality={85}
-            draggable="false"
-            class="absolute inset-0 h-full w-full object-cover object-center pointer-events-none"
-            style="filter: contrast(1.2) saturate(0.8) brightness(0.9);"
-          />
-          
-          <div 
-            class="pointer-events-none absolute inset-0 z-10 bg-[#ef4444] opacity-[0.28]" 
-            style="mix-blend-mode: multiply;"
-          ></div>
-
-          <div 
-            class="black-hole-core pointer-events-none absolute inset-0 z-15 opacity-0"
-            style="
-              background: radial-gradient(
-                circle 95px at var(--bh-x, 50%) var(--bh-y, 50%), 
-                rgba(0, 0, 0, 0.97) 0%, 
-                rgba(0, 0, 0, 0.8) 28%, 
-                rgba(239, 68, 68, 0.25) 48%, 
-                transparent 75%
-              );
-            "
-          ></div>
-
-          <div 
-            class="pointer-events-none absolute inset-0 z-20"
-            style="
-              background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.15) 50%);
-              background-size: 100% 4px;
-              box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.6);
-            "
-          ></div>
-        </div>
-
-        <svg class="absolute w-0 h-0 pointer-events-none" aria-hidden="true" focusable="false">
-          <defs>
-            <filter 
-              id="blackHoleFilter" 
-              x="-10%" 
-              y="-10%" 
-              width="120%" 
-              height="120%" 
-              filterUnits="objectBoundingBox"
-              primitiveUnits="objectBoundingBox"
-              color-interpolation-filters="sRGB"
-            >
-              <feImage 
-                class="bh-fe-image" 
-                x="-0.5" 
-                y="-0.5" 
-                width="2" 
-                height="2" 
-                preserveAspectRatio="none" 
-                result="bhMap" 
-              />
-              <feDisplacementMap 
-                class="bh-displacement"
-                in="SourceGraphic" 
-                in2="bhMap" 
-                scale="0" 
-                xChannelSelector="R" 
-                yChannelSelector="G" 
-              />
-            </filter>
-          </defs>
-        </svg>
-      </>
-    )}
+    </div>
   </div>
 </Box>

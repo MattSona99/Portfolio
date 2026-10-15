@@ -1,0 +1,18 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Box from "../components/ui/Box.astro";
+import Footer from "../components/home/Footer.astro";
+---
+
+<BaseLayout>
+  <Box
+    as="section"
+    data-hero
+    aria-label="Hero"
+    class="-mt-2px relative h-[calc(100svh-var(--header-h))] w-full overflow-hidden"
+  >
+    <h1>Pagina Github</h1>
+  </Box> <!-- AGGIUNTA LA CHIUSURA DEL BOX QUI -->
+
+  <Footer />
+</BaseLayout>

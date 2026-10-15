@@ -9,8 +9,9 @@
 >
   {/* --- SFONDO A 3 PERSIANE VERTICALI --- */}
   <div class="loader-shutters absolute inset-0 grid grid-cols-3 pointer-events-none">
-    <div class="loader-shutter h-full w-full border-r border-[#333436] bg-[#121416] will-change-transform origin-top"></div>
-    <div class="loader-shutter h-full w-full border-r border-[#333436] bg-[#121416] will-change-transform origin-top"></div>
+    {/* Aggiunto w-[calc(100%+2px)] per coprire il gap dei sub-pixel */}
+    <div class="loader-shutter h-full w-[calc(100%+2px)] border-r border-[#333436] bg-[#121416] will-change-transform origin-top"></div>
+    <div class="loader-shutter h-full w-[calc(100%+2px)] border-r border-[#333436] bg-[#121416] will-change-transform origin-top"></div>
     <div class="loader-shutter h-full w-full bg-[#121416] will-change-transform origin-top"></div>
   </div>
 
@@ -35,7 +36,7 @@
         <div class="relative h-[3px] w-full overflow-hidden bg-[#333436]">
           <div
             class="loader-bar h-full w-full origin-left scale-x-0 will-change-transform"
-            style="background: linear-gradient(90deg, #2563eb 0%, #facc15 50%, #dc2626 100%);"
+            style="background: linear-gradient(90deg, #b7efc5 0%, #6ede8a 50%, #25a244 100%);"
           ></div>
         </div>
       </div>
