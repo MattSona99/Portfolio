@@ -31,7 +31,7 @@ const { title = "Matteo Sonaglioni" } = Astro.props;
       <Loader />
     </div>
 
-    <Navbar transition:persist="navbar" />
+    <Navbar />
     <main class="wrap">
       <slot />
     </main>
@@ -46,11 +46,12 @@ const { title = "Matteo Sonaglioni" } = Astro.props;
       import "../scripts/theme";
       import "../scripts/lang";
       import "../scripts/lenis";
-      import "../scripts/animations/hero";
+      import "../scripts/animations/navbar";
       import { initCards } from "../scripts/animations/cards";
       import { initLoader } from "../scripts/animations/loader";
       import { initFooterMotion } from "../scripts/footer-motion";
 
+      let cleanupCards: (() => void) | undefined;
       let cleanupFooter: (() => void) | undefined;
 
       document.addEventListener("astro:page-load", () => {
@@ -70,11 +71,16 @@ const { title = "Matteo Sonaglioni" } = Astro.props;
 
         initCards();
 
+        cleanupCards?.();
+        cleanupCards = initCards();
+
         cleanupFooter?.();
         cleanupFooter = initFooterMotion();
       });
 
       document.addEventListener("astro:before-swap", () => {
+        cleanupCards?.();
+        cleanupCards = undefined;
         cleanupFooter?.();
         cleanupFooter = undefined;
       });

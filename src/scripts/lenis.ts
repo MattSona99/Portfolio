@@ -36,7 +36,7 @@ document.addEventListener('astro:page-load', () => {
     scrollIndicator = document.getElementById('scroll-percentage');
 });
 
-document.addEventListener('astro:after-swap', () => {
+document.addEventListener( 'astro:page-load', () => {
     lenis.scrollTo(0, { immediate: true });
     if (scrollIndicator) {
         scrollIndicator.innerText = '000%';

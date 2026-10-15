@@ -1,6 +1,7 @@
 import { gsap } from "gsap";
 
 export function initCards() {
+  const cleanups: Array<() => void> = [];
   const cards = document.querySelectorAll<HTMLElement>("[data-card]");
 
   cards.forEach((card) => {
@@ -279,5 +280,24 @@ export function initCards() {
         overwrite: true,
       });
     });
+    cleanups.push(() => {
+      isHovered = false;
+      enterTl?.kill();
+      headerLoopTween?.kill();
+      centerLoopTl?.kill();
+      patternLoopTween?.kill();
+      gsap.killTweensOf([
+        topChars,
+        bottomChars,
+        bgCurtain,
+        pattern,
+        centerMain,
+        centerChars,
+        echoTop,
+        echoBottom,
+      ]);
+    })
   });
+
+  return () => cleanups.forEach((fn) => fn());
 }
