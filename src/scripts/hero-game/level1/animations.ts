@@ -1,5 +1,5 @@
 import { gsap } from 'gsap';
-import type { GameState } from './types';
+import type { GameState } from '../core/types';
 
 export type EyeShape =
   | 'round'

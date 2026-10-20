@@ -8,68 +8,76 @@ export function initCards() {
     const topChars = card.querySelectorAll<HTMLElement>("[data-char-top]");
     const bottomChars = card.querySelectorAll<HTMLElement>("[data-char-bottom]");
     const bgCurtain = card.querySelector<HTMLElement>("[data-card-bg]");
-    const pattern = card.querySelector<HTMLElement>("[data-card-pattern]");
+    const image = card.querySelector<HTMLElement>("[data-card-pattern]");
 
     const centerMain = card.querySelector<HTMLElement>("[data-center-main]");
     const centerChars = card.querySelectorAll<HTMLElement>("[data-center-char]");
     const echoTop = card.querySelector<HTMLElement>("[data-center-echo-top]");
     const echoBottom = card.querySelector<HTMLElement>("[data-center-echo-bottom]");
 
-    let isHovered = false;
     let enterTl: gsap.core.Timeline | null = null;
     let headerLoopTween: gsap.core.Tween | null = null;
     let centerLoopTl: gsap.core.Timeline | null = null;
-    let patternLoopTween: gsap.core.Tween | null = null;
 
-    // ─── STATO INIZIALE ───
+    const animatedElements = [
+      topChars,
+      bottomChars,
+      bgCurtain,
+      image,
+      centerMain,
+      centerChars,
+      echoTop,
+      echoBottom,
+    ];
+
+    // Stato iniziale
     gsap.set(topChars, { yPercent: 0, scaleY: 1 });
     gsap.set(bottomChars, { yPercent: 115, scaleY: 1 });
-    gsap.set([echoTop, echoBottom], { yPercent: 0, opacity: 0, scale: 0.95 });
+    gsap.set([echoTop, echoBottom], {
+      yPercent: 0,
+      opacity: 0,
+      scale: 0.95,
+    });
 
-    // ─── HOVER ENTER ───
-    card.addEventListener("mouseenter", () => {
-      isHovered = true;
+    if (image) {
+      gsap.set(image, {
+        scale: 1,
+        x: 0,
+        y: 0,
+        transformOrigin: "50% 50%",
+        willChange: "transform",
+      });
+    }
 
+    if (bgCurtain) {
+      gsap.set(bgCurtain, {
+        scaleY: 0,
+        opacity: 0,
+        transformOrigin: "bottom center",
+      });
+    }
+
+    if (centerMain) {
+      gsap.set(centerMain, { opacity: 0.15, scale: 1 });
+    }
+
+    const stopAnimations = () => {
       enterTl?.kill();
       headerLoopTween?.kill();
       centerLoopTl?.kill();
-      patternLoopTween?.kill();
-      gsap.killTweensOf([
-        topChars,
-        bottomChars,
-        bgCurtain,
-        pattern,
-        centerMain,
-        centerChars,
-        echoTop,
-        echoBottom,
-      ]);
+      gsap.killTweensOf(animatedElements);
+    };
 
-      // Scorri lentamente il pattern vettoriale in loop durante l'hover
-      if (pattern) {
-        gsap.to(pattern, {
-          opacity: 0.12,
-          scale: 1.05,
-          duration: 0.5,
-          ease: "power2.out",
-        });
-        patternLoopTween = gsap.to(pattern, {
-          backgroundPosition: "220px 220px",
-          duration: 12,
-          repeat: -1,
-          ease: "none",
-        });
-      }
+    // Hover enter
+    const onEnter = () => {
+      stopAnimations();
 
-      enterTl = gsap.timeline({
+      const tl = gsap.timeline({
         onComplete: () => {
-          if (!isHovered) return;
-
-          // LOOP 1: Onda continua sulle lettere dell'header superiore
           headerLoopTween = gsap.to(bottomChars, {
-            yPercent: -18,
-            scaleY: 1.2,
-            duration: 0.32,
+            yPercent: -12,
+            scaleY: 1.12,
+            duration: 0.55,
             stagger: {
               each: 0.045,
               repeat: -1,
@@ -78,24 +86,35 @@ export function initCards() {
             ease: "sine.inOut",
           });
 
-          // LOOP 2: Pulsazione magnetica delle scritte centrali
           centerLoopTl = gsap.timeline({ repeat: -1, yoyo: true });
           centerLoopTl
             .to(
               echoTop,
-              { yPercent: -105, scale: 1.04, opacity: 0.45, duration: 0.7, ease: "sine.inOut" },
+              {
+                yPercent: -105,
+                scale: 1.04,
+                opacity: 0.4,
+                duration: 1.1,
+                ease: "sine.inOut",
+              },
               0,
             )
             .to(
               echoBottom,
-              { yPercent: 105, scale: 1.04, opacity: 0.45, duration: 0.7, ease: "sine.inOut" },
+              {
+                yPercent: 105,
+                scale: 1.04,
+                opacity: 0.4,
+                duration: 1.1,
+                ease: "sine.inOut",
+              },
               0,
             )
             .to(
               centerChars,
               {
-                yPercent: -8,
-                duration: 0.4,
+                yPercent: -6,
+                duration: 0.65,
                 stagger: { each: 0.04, repeat: 1, yoyo: true },
                 ease: "sine.inOut",
               },
@@ -104,53 +123,176 @@ export function initCards() {
         },
       });
 
-      // 1. Roll-up del titolo in alto
-      enterTl.to(
-        topChars,
-        {
-          yPercent: -115,
-          duration: 0.4,
-          stagger: 0.02,
-          ease: "expo.out",
-        },
-        0,
-      );
+      enterTl = tl;
 
-      enterTl.to(
-        bottomChars,
-        {
-          yPercent: 0,
-          scaleY: 1,
-          duration: 0.4,
-          stagger: 0.02,
-          ease: "expo.out",
-        },
-        0,
-      );
-
-      // 2. Sipario di background
-      if (bgCurtain) {
-        gsap.set(bgCurtain, { transformOrigin: "bottom center" });
-        enterTl.to(
-          bgCurtain,
+      // PNG: zoom e movimento morbido, senza loop di pattern
+      if (image) {
+        tl.to(
+          image,
           {
-            scaleY: 1,
-            opacity: 0.14,
-            duration: 0.55,
-            ease: "expo.out",
+            scale: 1.07,
+            x: "-1.2%",
+            y: "-1%",
+            duration: 1.1,
+            ease: "power2.out",
           },
           0,
         );
       }
 
-      // 3. Animazione testo centrale
+      // Overlay
+      if (bgCurtain) {
+        tl.to(
+          bgCurtain,
+          {
+            scaleY: 1,
+            opacity: 0.16,
+            duration: 0.75,
+            ease: "power3.out",
+          },
+          0,
+        );
+      }
+
+      // Titolo superiore e inferiore
+      tl.to(
+        topChars,
+        {
+          yPercent: -115,
+          duration: 0.55,
+          stagger: 0.025,
+          ease: "expo.out",
+        },
+        0,
+      );
+
+      tl.to(
+        bottomChars,
+        {
+          yPercent: 0,
+          duration: 0.55,
+          stagger: 0.025,
+          ease: "expo.out",
+        },
+        0,
+      );
+
+      // Testo centrale
       if (centerMain) {
-        enterTl.to(
+        tl.to(
           centerMain,
           {
             opacity: 1,
             color: "var(--accent)",
-            scale: 1.05,
+            scale: 1.04,
+            duration: 0.65,
+            ease: "power3.out",
+          },
+          0.08,
+        );
+      }
+
+      tl.fromTo(
+        centerChars,
+        { yPercent: 22 },
+        {
+          yPercent: 0,
+          duration: 0.6,
+          stagger: 0.025,
+          ease: "back.out(1.6)",
+        },
+        0.08,
+      );
+
+      tl.to(
+        echoTop,
+        {
+          yPercent: -85,
+          opacity: 0.32,
+          scale: 1,
+          duration: 0.7,
+          ease: "expo.out",
+        },
+        0.1,
+      );
+
+      tl.to(
+        echoBottom,
+        {
+          yPercent: 85,
+          opacity: 0.32,
+          scale: 1,
+          duration: 0.7,
+          ease: "expo.out",
+        },
+        0.1,
+      );
+    };
+
+    // Hover leave
+    const onLeave = () => {
+      stopAnimations();
+
+      const tl = gsap.timeline();
+
+      if (image) {
+        tl.to(
+          image,
+          {
+            scale: 1,
+            x: 0,
+            y: 0,
+            duration: 0.65,
+            ease: "power3.out",
+          },
+          0,
+        );
+      }
+
+      if (bgCurtain) {
+        tl.to(
+          bgCurtain,
+          {
+            scaleY: 0,
+            opacity: 0,
+            duration: 0.5,
+            ease: "power3.inOut",
+          },
+          0,
+        );
+      }
+
+      tl.to(
+        topChars,
+        {
+          yPercent: 0,
+          scaleY: 1,
+          duration: 0.45,
+          stagger: { each: 0.015, from: "end" },
+          ease: "expo.out",
+        },
+        0,
+      );
+
+      tl.to(
+        bottomChars,
+        {
+          yPercent: 115,
+          scaleY: 1,
+          duration: 0.45,
+          stagger: { each: 0.015, from: "end" },
+          ease: "expo.out",
+        },
+        0,
+      );
+
+      if (centerMain) {
+        tl.to(
+          centerMain,
+          {
+            opacity: 0.15,
+            color: "var(--fg)",
+            scale: 1,
             duration: 0.45,
             ease: "expo.out",
           },
@@ -158,145 +300,37 @@ export function initCards() {
         );
       }
 
-      enterTl.fromTo(
+      tl.to(
         centerChars,
-        { yPercent: 25 },
         {
           yPercent: 0,
-          duration: 0.45,
-          stagger: 0.02,
-          ease: "back.out(2)",
+          duration: 0.4,
+          ease: "expo.out",
         },
         0,
       );
 
-      enterTl.to(
-        echoTop,
+      tl.to(
+        [echoTop, echoBottom],
         {
-          yPercent: -85,
-          opacity: 0.35,
-          scale: 1,
-          duration: 0.5,
-          ease: "expo.out",
-        },
-        0.05,
-      );
-
-      enterTl.to(
-        echoBottom,
-        {
-          yPercent: 85,
-          opacity: 0.35,
-          scale: 1,
-          duration: 0.5,
-          ease: "expo.out",
-        },
-        0.05,
-      );
-    });
-
-    // ─── HOVER LEAVE ───
-    card.addEventListener("mouseleave", () => {
-      isHovered = false;
-
-      enterTl?.kill();
-      headerLoopTween?.kill();
-      centerLoopTl?.kill();
-      patternLoopTween?.kill();
-      gsap.killTweensOf([
-        topChars,
-        bottomChars,
-        bgCurtain,
-        pattern,
-        centerMain,
-        centerChars,
-        echoTop,
-        echoBottom,
-      ]);
-
-      if (pattern) {
-        gsap.to(pattern, {
-          opacity: 0.05,
-          scale: 1,
-          duration: 0.4,
-          ease: "power2.out",
-          overwrite: true,
-        });
-      }
-
-      gsap.to(topChars, {
-        yPercent: 0,
-        scaleY: 1,
-        duration: 0.4,
-        stagger: { each: 0.015, from: "end" },
-        ease: "expo.out",
-        overwrite: true,
-      });
-
-      gsap.to(bottomChars, {
-        yPercent: 115,
-        scaleY: 1,
-        duration: 0.4,
-        stagger: { each: 0.015, from: "end" },
-        ease: "expo.out",
-        overwrite: true,
-      });
-
-      if (bgCurtain) {
-        gsap.set(bgCurtain, { transformOrigin: "top center" });
-        gsap.to(bgCurtain, {
-          scaleY: 0,
+          yPercent: 0,
           opacity: 0,
-          duration: 0.45,
-          ease: "expo.out",
-          overwrite: true,
-        });
-      }
-
-      if (centerMain) {
-        gsap.to(centerMain, {
-          opacity: 0.15,
-          color: "var(--fg)",
-          scale: 1,
+          scale: 0.95,
           duration: 0.4,
           ease: "expo.out",
-          overwrite: true,
-        });
-      }
+        },
+        0,
+      );
+    };
 
-      gsap.to(centerChars, {
-        yPercent: 0,
-        duration: 0.35,
-        ease: "expo.out",
-        overwrite: true,
-      });
+    card.addEventListener("mouseenter", onEnter);
+    card.addEventListener("mouseleave", onLeave);
 
-      gsap.to([echoTop, echoBottom], {
-        yPercent: 0,
-        opacity: 0,
-        scale: 0.95,
-        duration: 0.35,
-        ease: "expo.out",
-        overwrite: true,
-      });
-    });
     cleanups.push(() => {
-      isHovered = false;
-      enterTl?.kill();
-      headerLoopTween?.kill();
-      centerLoopTl?.kill();
-      patternLoopTween?.kill();
-      gsap.killTweensOf([
-        topChars,
-        bottomChars,
-        bgCurtain,
-        pattern,
-        centerMain,
-        centerChars,
-        echoTop,
-        echoBottom,
-      ]);
-    })
+      stopAnimations();
+      card.removeEventListener("mouseenter", onEnter);
+      card.removeEventListener("mouseleave", onLeave);
+    });
   });
 
   return () => cleanups.forEach((fn) => fn());

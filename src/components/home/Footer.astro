@@ -1,71 +1,67 @@
 ---
-const groups = [
-  {
-    title: "Explore",
-    links: [
-      { label: "About", href: "/about" },
-      { label: "Manifesto", href: "/manifest" },
-      { label: "Curriculum", href: "/curriculum" },
-      { label: "GitHub", href: "/github" },
-    ],
-  },
-  {
-    title: "Support",
-    links: [
-      { label: "FAQ", href: "/faq" },
-      { label: "Contact", href: "/contact" },
-      { label: "Feedback", href: "/feedback" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms", href: "/terms" },
-      { label: "Cookies", href: "/cookies" },
-      { label: "Accessibility", href: "/accessibility" },
-    ],
-  },
-];
+import { ui } from "../../i18n/ui";
+
+const langs = ["en", "it"] as const;
 ---
 
 <footer data-site-footer class="w-full bg-bg text-fg">
-  <!-- Scena vuota, nello stile della Hero -->
+  <!-- Scena vuota -->
   <section
     data-footer-stage
     aria-label="Footer visual"
     class="relative -mt-px h-[100svh] min-h-[32rem] w-full overflow-hidden border-y border-line"
   >
-    <div
-      data-footer-visual
-      aria-hidden="true"
-      class="absolute inset-0 bg-bg"
-    ></div>
+    <div data-footer-visual aria-hidden="true" class="absolute inset-0 bg-bg">
+    </div>
   </section>
 
   <!-- Informazioni -->
-  <section data-footer-info aria-label="Site information" class="footer-wrap">
-    <div class="grid grid-cols-2 gap-x-5 gap-y-8 border-b border-line py-7 md:grid-cols-4 md:gap-x-8 md:py-8">
-      <div class="footer-column">
-        <h2 class="footer-label">Navigate</h2>
-        <a class="footer-link" href="/">Home</a>
-        <a class="footer-link" href="/#cards-section">Projects</a>
-        <a class="footer-link" href="/manifest">Manifesto</a>
-      </div>
+  <section data-footer-info aria-label="Site information" class="footer-wrap relative">
+    <div class="grid grid-cols-1 grid-rows-1 w-full">
+      {
+        langs.map((lang) => {
+          const t = ui[lang].footer;
+          return (
+            <div
+              data-lang={lang}
+              lang={lang}
+              class="col-start-1 row-start-1 flex flex-col w-full"
+            >
+              <div class="grid grid-cols-2 gap-x-5 gap-y-8 border-b border-line py-7 md:grid-cols-4 md:gap-x-8 md:py-8">
+                <div class="footer-column">
+                  <h2 class="footer-label">{t.navigate}</h2>
+                  {t.navLinks.map((link) => (
+                    <a class="footer-link" href={link.href}>
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
 
-      {groups.map((group) => (
-        <div class="footer-column">
-          <h2 class="footer-label">{group.title}</h2>
-          {group.links.map((link) => (
-            <a class="footer-link" href={link.href}>{link.label}</a>
-          ))}
-        </div>
-      ))}
-    </div>
+                {t.groups.map((group) => (
+                  <div class="footer-column">
+                    <h2 class="footer-label">{group.title}</h2>
+                    {group.links.map((link) => (
+                      <a
+                        class="footer-link"
+                        href={link.href}
+                        target={link.external ? "_blank" : undefined}
+                        rel={link.external ? "noopener noreferrer" : undefined}
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                ))}
+              </div>
 
-    <div class="flex flex-col justify-between gap-3 py-4 text-xs text-fg/50 sm:flex-row sm:items-center">
-      <span>© {new Date().getFullYear()} Matteo Sonaglioni</span>
-      <a class="footer-link" href="#top">Back to top ↑</a>
+              <div class="flex flex-col justify-between gap-3 py-4 text-xs text-fg/50 sm:flex-row sm:items-center">
+                <span>© {new Date().getFullYear()} Matteo Sonaglioni</span>
+                <a class="footer-link" href="#top">{t.backToTop}</a>
+              </div>
+            </div>
+          );
+        })
+      }
     </div>
   </section>
 </footer>

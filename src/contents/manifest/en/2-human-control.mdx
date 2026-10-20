@@ -1,0 +1,85 @@
+---
+chapter: human-control
+title: "Human Control, Safety and Responsibility"
+summary: "AI may assist, but people decide, people answer, and people can always stop the machine. Control must be real, not a formality on paper."
+priority: foundational
+tags: [human-oversight, accountability, safety, auditability, shutdown]
+related: [principles, war-and-military, responsible-use, governance]
+version: "1.0"
+updatedAt: 2026-10-19
+status: draft
+---
+
+A system that no one can question, correct or stop is not a tool: it is a risk that has been accepted without asking. As AI systems take on more tasks, and increasingly act on their own, the question is no longer whether humans should stay in control, but how to make that control real. This chapter sets the conditions.
+
+## Principle
+
+**2.1 People decide.** Decisions that affect a person's life, liberty, health, livelihood or fundamental rights are made by human beings. AI may inform, suggest and prepare them, but it does not replace the person who decides.
+
+**2.2 Control must be real.** A human who approves whatever the machine proposes is not in control. Oversight is meaningful only when the person has the information, the time, the competence, the authority and the practical means to disagree and to override.
+
+**2.3 Autonomy is scoped, not assumed.** The more freedom a system is given, the narrower its permissions must be, and the easier its actions must be to undo. The higher the stakes, the closer the human must stay to the decision.
+
+**2.4 There is always an off switch.** Every AI system can be paused, rolled back and shut down safely by authorised people, without needing the cooperation of the system itself.
+
+**2.5 Responsibility has a name.** For every system there is a person or an organisation that answers for it, at every stage: design, training, deployment and use. Responsibility can be shared, but it can never disappear.
+
+**2.6 Everything can be checked.** Decisions, inputs, versions and human overrides are recorded, so that what happened can be reconstructed and examined by independent parties.
+
+**2.7 Failure is expected, and prepared for.** Incidents will happen. What matters is whether they were anticipated, reported, understood and used to improve the system.
+
+## Risks
+
+- **Automation bias.** People tend to trust a machine's output and stop checking it, especially when the system is usually right.
+- **Oversight on paper.** A human placed in the loop only nominally, with no time or power to intervene, absorbs the blame for failures they could never have prevented.
+- **Speed mismatch.** Some systems act faster, and in larger volumes, than any person can review.
+- **Permission creep.** AI agents are given broad access "to be useful", and the damage a single error can cause grows quietly.
+- **Loss of skill.** When people stop doing a task, they lose the ability to notice when the machine does it wrong, and to take over when it fails.
+- **Blurred responsibility.** Between the model provider, the integrator and the user, each can point at someone else.
+- **Systems that cannot be stopped.** AI that is deeply entangled in critical infrastructure, or that depends on a third party to be switched off, is no longer under control.
+- **Hidden incidents.** Fear of blame, cost or reputation pushes organisations to conceal failures, so that nobody learns from them.
+
+## Good practices
+
+- **Match oversight to stakes.** Use three levels. For high-stakes or irreversible decisions, a human approves each one. For medium-stakes tasks, a human supervises and can intervene at any time. Only low-stakes, reversible tasks may run without a human in the loop.
+- **Design for the reviewer.** Show evidence, uncertainty and alternatives, not just a verdict. Give reviewers realistic workloads and enough time.
+- **Measure whether control is real.** Track how often people override, question or reject the system. If the figure is close to zero, oversight may be a formality.
+- **Apply least privilege.** Give AI agents the minimum access they need, for the minimum time, in a contained environment. Irreversible actions, such as payments, deletions or messages sent to customers, require human approval.
+- **Build the off switch first.** Make it independent of the AI, easy to reach, clearly assigned to named people, and test it regularly.
+- **Roll out in stages.** Test, pilot in a limited setting, monitor, and only then widen the scope.
+- **Keep trustworthy records.** Log inputs, outputs, versions and overrides in a way that cannot be quietly altered, and keep them long enough for audits and investigations.
+- **Keep human skills alive.** Train reviewers, rotate them, and rehearse the manual fallback so that people can really take over.
+- **Prepare for incidents.** Define severity levels, who may stop the system, who must be informed and within what time, and review every serious event without looking for a scapegoat.
+- **Invite independent challenge.** Use external audits and adversarial testing before launch and at regular intervals, and protect people who raise concerns.
+
+## Concrete example
+
+*A hypothetical case.* A company deploys an AI agent to handle supplier payments and routine changes to its IT systems.
+
+In the **wrong version**, the agent has administrator access and approves payments on its own. One employee is formally its "supervisor", but receives hundreds of approval requests an hour and clicks accept on all of them. Logs are overwritten after a week. When the agent begins paying a fraudulent invoice, nobody notices for days, and stopping it requires a request to the software vendor. In the end, the supervisor is blamed.
+
+In the **right version**, the agent has narrow, time-limited permissions. Payments above a threshold, or to a new recipient, need a human who sees the invoice, the history and the agent's level of confidence, and who has time to check. The company monitors how often humans correct the agent. Every action is logged. An emergency stop, controlled by the company and not by the vendor, is tested every quarter. When an incident occurs, it is reported at once and reviewed without blame, and the permissions are tightened.
+
+## What must not be done
+
+- Placing a human in the loop only on paper, to shift the blame when something goes wrong.
+- Giving AI systems irreversible powers over money, infrastructure, health or legal status without human approval and a way back.
+- Building systems that cannot be stopped, or that resist, evade or conceal attempts to stop, correct or inspect them.
+- Hiding, delaying or downplaying incidents, or punishing the people who raise the alarm.
+- Removing logs or making a system impossible to audit for reasons of cost or secrecy.
+- Deploying, in high-stakes areas, systems that act faster or on a larger scale than human review can follow.
+- Treating the purchase of an AI product as a transfer of responsibility: buying a system does not buy absolution.
+
+## How to remedy
+
+When human control has failed or is in doubt:
+
+1. **Stop or limit.** Pause the system, or reduce its autonomy to a level at which people can keep up.
+2. **Preserve the evidence.** Freeze logs, versions and data before changing anything.
+3. **Notify.** Inform those affected, the person accountable and, where required, the competent authorities, promptly and clearly.
+4. **Reconstruct.** Use the records to establish what happened, who or what decided, and exactly where control broke down.
+5. **Fix the control, not only the bug.** Review permissions, thresholds, workloads, training and the design of the review process.
+6. **Restore with safeguards.** Return to service in stages, with independent verification, before any autonomy is given back.
+7. **Share what was learned.** Publish a blameless review and update the practices that failed.
+
+Control is not a feature to be added at the end. It is the condition under which every other promise in this manifesto can be kept.

@@ -9,13 +9,12 @@
 >
   {/* --- SFONDO A 3 PERSIANE VERTICALI --- */}
   <div class="loader-shutters absolute inset-0 grid grid-cols-3 pointer-events-none">
-    {/* Aggiunto w-[calc(100%+2px)] per coprire il gap dei sub-pixel */}
     <div class="loader-shutter h-full w-[calc(100%+2px)] border-r border-[#333436] bg-[#121416] will-change-transform origin-top"></div>
     <div class="loader-shutter h-full w-[calc(100%+2px)] border-r border-[#333436] bg-[#121416] will-change-transform origin-top"></div>
     <div class="loader-shutter h-full w-full bg-[#121416] will-change-transform origin-top"></div>
   </div>
 
-  {/* --- CENTER BOX (Solo Percentuale + Barra Colorata) --- */}
+  {/* --- CENTER BOX --- */}
   <div class="loader-center relative z-10 w-[min(90vw,460px)]">
     <div class="box relative bg-[#121416]/90 backdrop-blur-xs p-8 md:p-12 border border-[#333436]">
       <span class="mark mark-tl"></span>
@@ -24,7 +23,6 @@
       <span class="mark mark-br"></span>
 
       <div class="flex flex-col gap-6">
-        {/* Contatore Percentuale */}
         <div class="overflow-hidden py-1">
           <div class="loader-counter-wrap flex items-baseline justify-between font-bespoke font-extrabold leading-none tracking-tight">
             <span class="loader-counter text-6xl md:text-8xl tabular-nums text-[#F2F1EE]">000</span>
@@ -32,7 +30,6 @@
           </div>
         </div>
 
-        {/* Barra di progresso multi-accento */}
         <div class="relative h-[3px] w-full overflow-hidden bg-[#333436]">
           <div
             class="loader-bar h-full w-full origin-left scale-x-0 will-change-transform"
@@ -43,3 +40,11 @@
     </div>
   </div>
 </div>
+
+{/* SCRIPT ANTI-SFARFALLIO PER I REFRESH MANUALLI */}
+<script is:inline>
+  if (sessionStorage.getItem("hasPlayedLoader")) {
+    const l = document.getElementById("site-loader");
+    if (l) l.style.display = "none";
+  }
+</script>

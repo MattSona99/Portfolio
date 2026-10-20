@@ -1,6 +1,6 @@
-import { CONFIG, cubeMetrics } from "./config";
-import type { MoveDir, Palette } from "./types";
-import { mixColors } from "./color";
+import { CONFIG, cubeMetrics } from "../core/config";
+import type { MoveDir, Palette } from "../core/types";
+import { mixColors } from "../core/color";
 import { createEyeState } from "./animations";
 import type { EyeState } from "./animations";
 

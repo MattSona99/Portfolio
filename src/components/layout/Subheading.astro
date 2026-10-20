@@ -1,0 +1,8 @@
+---
+// The chapter title is the page's <h2>, so the "##" headings written inside the
+// MDX files are rendered as <h3>. The auto-generated id is dropped on purpose:
+// "risks" or "principle" would be repeated in every chapter and in every language.
+const { id: _id, ...rest } = Astro.props;
+---
+
+<h3 {...rest}><slot /></h3>

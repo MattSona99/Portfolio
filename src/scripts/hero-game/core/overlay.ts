@@ -1,8 +1,9 @@
-import { drawCube } from './cube';
+import { drawCube } from '../level1/cube';
 import { readPalette } from './palette';
-import { TILE, cubeMetrics } from './config';
+import { TILE, bodyMetrics, cubeMetrics } from './config';
+import { drawSquareBurst } from '../level2/burst';
 import type { HeroFx, Palette } from './types';
-import type { EyeState } from './animations';
+import type { EyeState } from '../level1/animations';
 
 // Canvas fisso a tutto schermo, sopra a tutto il sito, usato solo durante l'esplosione:
 // i pezzi del cubo escono dalla Hero, si disperdono per la pagina e svaniscono.
@@ -38,11 +39,11 @@ export function createBlastOverlay() {
   observer.observe(canvas);
   resize();
 
-  // Onda d'urto isometrica che parte dal punto dell'esplosione.
-  const drawShockwave = (x: number, y: number, t: number, palette: Palette) => {
+  // Onda d'urto che parte dal punto dell'esplosione: ellittica (isometrica) o circolare (2D).
+  const drawShockwave = (x: number, y: number, t: number, palette: Palette, plane: number) => {
     const out = 1 - Math.pow(1 - t, 3);
     const rx = 80 + out * Math.max(width, height) * 0.9;
-    const ry = rx * (TILE.h / TILE.w);
+    const ry = rx * (TILE.h / TILE.w + (1 - TILE.h / TILE.w) * plane);
     const ramp = Math.min(1, t * 10);
 
     ctx!.save();
@@ -55,7 +56,8 @@ export function createBlastOverlay() {
     ctx!.restore();
   };
 
-  function draw(fx: HeroFx, eyes: EyeState) {
+  // `plane` = 0 isometrico (esplode il cubo), 1 vista dall'alto (esplode il quadrato in pixel).
+  function draw(fx: HeroFx, eyes: EyeState, plane = 0) {
     if (!ctx) return;
 
     // Nessuna esplosione in corso: pulisci una volta sola e non fare altro.
@@ -73,9 +75,31 @@ export function createBlastOverlay() {
     const palette = readPalette();
     const { footY } = cubeMetrics();
 
-    if (fx.wave > 0) drawShockwave(fx.blastX, fx.blastY, fx.wave, palette);
+    if (fx.wave > 0) drawShockwave(fx.blastX, fx.blastY, fx.wave, palette, plane);
 
-    // Stesso cubo che si vedeva nella Hero, ora in coordinate viewport.
+    const burst = {
+      sx: fx.squashX,
+      sy: fx.squashY,
+      explode: fx.explode,
+      fly: fx.fly,
+      vw: width,
+      vh: height,
+    };
+
+    // Livello 2: il quadrato si frantuma in blocchi di pixel.
+    if (plane >= 0.5) {
+      drawSquareBurst(
+        ctx,
+        fx.blastX + fx.shakeX,
+        fx.blastY + fx.shakeY,
+        bodyMetrics(plane).fullH,
+        burst,
+        palette,
+      );
+      return;
+    }
+
+    // Livello 1: stesso cubo che si vedeva nella Hero, ora in coordinate viewport.
     drawCube(
       ctx,
       fx.blastX + fx.shakeX,
@@ -85,14 +109,7 @@ export function createBlastOverlay() {
       0,
       eyes,
       null,
-      {
-        sx: fx.squashX,
-        sy: fx.squashY,
-        explode: fx.explode,
-        fly: fx.fly,
-        vw: width,
-        vh: height,
-      },
+      burst,
     );
   }
 

@@ -1,6 +1,6 @@
-import { CONFIG, baseGroundY, cubeMetrics } from './config';
+import { CONFIG, baseGroundAt, bodyMetrics } from './config';
 import type { HeroFx } from './types';
-import type { EyeState } from './animations';
+import type { EyeState } from '../level1/animations';
 
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 const smooth = (t: number) => t * t * (3 - 2 * t);
@@ -71,7 +71,9 @@ export function createHeroScroll(shell: HTMLElement) {
     return nav;
   };
 
-  function read(width: number, height: number, time: number): HeroFx {
+  // `plane` = 0 isometrico (il giocatore è il cubo), 1 vista dall'alto (è il quadrato):
+  // cambia l'ingombro del corpo che viene schiacciato tra navbar e fine della Hero.
+  function read(width: number, height: number, time: number, plane = 0): HeroFx {
     const rect = shell.getBoundingClientRect();
     const viewport = window.innerHeight;
 
@@ -88,7 +90,7 @@ export function createHeroScroll(shell: HTMLElement) {
     const rawBand = bottom - top; // può diventare negativo a Hero uscita
     const bandH = Math.max(0, rawBand);
 
-    const { h, fullH } = cubeMetrics();
+    const { fullH, below } = bodyMetrics(plane);
 
     // ── Filtro temporale ──
     const dt = sm.primed ? Math.min(Math.max(time - sm.t, 0), 50) / 1000 : 0;
@@ -128,7 +130,7 @@ export function createHeroScroll(shell: HTMLElement) {
     // in cui parte lo scoppio. È solo geometria, quindi il passaggio tra il canvas della
     // Hero e l'overlay è continuo in entrambi i sensi.
     const blastX = rect.left + (rect.width || width) / 2;
-    const blastY = navBottom + S.minSquash * fullH - h;
+    const blastY = navBottom + S.minSquash * fullH - below;
 
     // ── Schiacciamento: il cubo riempie esattamente la fascia ──
     const sy0 = Math.min(1, Math.max(S.minSquash, r));
@@ -142,8 +144,8 @@ export function createHeroScroll(shell: HTMLElement) {
     // Libero: segue il centro della fascia, filtrato nel tempo (niente scatti).
     // Avvicinandosi allo schiacciamento (r da 1.7 a 1) recupera gradualmente il ritardo del
     // filtro e si aggancia ai bordi reali: da r = 1 è incollato al pavimento, senza filtro.
-    const baseGround = baseGroundY(height);
-    const pressedGround = bandBottom - h - Math.max(0, (bandH - fullH) / 2);
+    const baseGround = baseGroundAt(height, plane);
+    const pressedGround = bandBottom - below - Math.max(0, (bandH - fullH) / 2);
     const follow = Math.max(
       smooth(clamp01((progress - S.focusRegain) / 0.25)),
       clamp01((2 - r) / 0.75),

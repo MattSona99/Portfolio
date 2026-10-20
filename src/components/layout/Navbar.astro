@@ -9,17 +9,31 @@ import LangToggle from "../ui/LangToggle.astro";
     <Box
       as="nav"
       aria-label="Principale"
-      class="grid h-16 grid-cols-[1fr_auto] items-center px-4 md:grid-cols-[1fr_auto_1fr] md:px-6"
+      class="grid h-16 grid-cols-[1fr_auto_1fr] items-center px-4 md:px-6"
     >
-      <span class="hidden md:block" aria-hidden="true"></span>
+      <!-- SLOTS SINISTRA: Tasto Indietro -->
+      <div class="flex items-center justify-start">
+        <button
+          type="button"
+          data-back-btn
+          aria-label="Torna indietro"
+          class="box-sm sheen sheen-contrast grid size-9 place-items-center transition-all duration-300 hover:scale-105 active:scale-95 opacity-0 -translate-x-4 pointer-events-none"
+        >
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" aria-hidden="true">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </button>
+      </div>
 
+      <!-- CENTRO: Logo -->
       <a
         href="/home"
-        class="font-bespoke text-2xl font-extrabold tracking-[0.2em] md:text-4xl"
+        class="flex justify-center font-bespoke text-2xl font-extrabold tracking-[0.2em] md:text-4xl"
       >
         M<span style="color: #25a244;">S</span>
       </a>
 
+      <!-- SLOTS DESTRA: Toggles -->
       <div class="flex items-center justify-end gap-2">
         <LangToggle />
         <ThemeToggle />

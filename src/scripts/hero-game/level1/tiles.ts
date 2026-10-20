@@ -1,6 +1,6 @@
-import { CONFIG, TILE, cubeMetrics } from './config';
-import { project } from './grid';
-import type { Course, HoleState, Palette, Point } from './types';
+import { CONFIG, TILE, cubeMetrics } from '../core/config';
+import { project } from '../core/grid';
+import type { Course, HoleState, Palette, Point } from '../core/types';
 
 function diamond(ctx: CanvasRenderingContext2D, cx: number, cy: number, a: number, b: number) {
   ctx.beginPath();
@@ -24,6 +24,7 @@ export function drawLitTiles(
   now: number,
   palette: Palette,
   alpha: number,
+  vanish = 0, // 0 → 1: il percorso scompare, tile dopo tile dalla partenza al buco
 ) {
   if (alpha <= 0.003) return;
 
@@ -41,15 +42,16 @@ export function drawLitTiles(
     const age = (now - hole.litAt[i]) / C.litMs;
     const flash = age >= 0 && age < 1 ? Math.pow(1 - age, 1.5) : 0;
     const keep = i <= hole.progress ? C.activatedAlpha : 0;
-    if (flash <= 0.003 && keep <= 0.003) continue;
+    const fade = 1 - Math.min(1, Math.max(0, vanish * 1.6 - (i / last) * 0.6));
+    if ((flash <= 0.003 && keep <= 0.003) || fade <= 0.003) continue;
 
     const p = project(course.path[i], originX, originY, vScale);
     diamond(ctx, p.x, p.y, a, b);
 
-    ctx.globalAlpha = alpha * (keep + flash * 0.4);
+    ctx.globalAlpha = alpha * fade * (keep + flash * 0.4);
     ctx.fill();
 
-    ctx.globalAlpha = alpha * Math.min(1, keep * 3 + flash);
+    ctx.globalAlpha = alpha * fade * Math.min(1, keep * 3 + flash);
     ctx.lineWidth = 1.5 + flash * 1.5;
     ctx.stroke();
   }

@@ -1,0 +1,92 @@
+[
+  {
+    "id": "dignity",
+    "order": 1,
+    "title": { "en": "Dignity", "it": "Dignità" },
+    "text": {
+      "en": "Artificial intelligence serves human beings: their dignity, freedom and rights are never negotiable.",
+      "it": "L'intelligenza artificiale è al servizio dell'essere umano: la sua dignità, libertà e i suoi diritti non sono mai negoziabili."
+    }
+  },
+  {
+    "id": "control",
+    "order": 2,
+    "title": { "en": "Control", "it": "Controllo" },
+    "text": {
+      "en": "Every decision that affects a person's life, liberty or health requires real and meaningful human oversight.",
+      "it": "Ogni decisione che incide sulla vita, sulla libertà o sulla salute di una persona richiede un controllo umano reale e significativo."
+    }
+  },
+  {
+    "id": "responsibility",
+    "order": 3,
+    "title": { "en": "Responsibility", "it": "Responsabilità" },
+    "text": {
+      "en": "Whoever designs, trains, deploys or uses an AI answers for it: responsibility cannot be delegated to a machine.",
+      "it": "Chi progetta, addestra, distribuisce o utilizza un'AI ne risponde: la responsabilità non si delega a una macchina."
+    }
+  },
+  {
+    "id": "life",
+    "order": 4,
+    "title": { "en": "Life", "it": "Vita" },
+    "text": {
+      "en": "No AI must ever decide autonomously to take a human life.",
+      "it": "Nessuna AI deve mai decidere autonomamente di togliere la vita a un essere umano."
+    }
+  },
+  {
+    "id": "truth",
+    "order": 5,
+    "title": { "en": "Truth", "it": "Verità" },
+    "text": {
+      "en": "Truth is a common good: AI must not deceive, manipulate or falsify reality to people's harm.",
+      "it": "La verità è un bene comune: l'AI non deve ingannare, manipolare o falsificare la realtà a danno delle persone."
+    }
+  },
+  {
+    "id": "transparency",
+    "order": 6,
+    "title": { "en": "Transparency", "it": "Trasparenza" },
+    "text": {
+      "en": "Everyone has the right to know when they are interacting with an AI, how it was trained and what its limits are.",
+      "it": "Ogni persona ha il diritto di sapere quando interagisce con un'AI, come è stata addestrata e quali sono i suoi limiti."
+    }
+  },
+  {
+    "id": "privacy",
+    "order": 7,
+    "title": { "en": "Privacy", "it": "Privacy" },
+    "text": {
+      "en": "Personal data belongs to the person: no progress justifies surveillance without consent.",
+      "it": "I dati personali appartengono alla persona: nessun progresso giustifica una sorveglianza senza consenso."
+    }
+  },
+  {
+    "id": "equity",
+    "order": 8,
+    "title": { "en": "Equity", "it": "Equità" },
+    "text": {
+      "en": "The benefits of AI must be shared by all: no person, population or worker may be sacrificed to profit.",
+      "it": "I benefici dell'AI devono essere condivisi da tutti: nessuna persona, popolazione o lavoratore va sacrificato al profitto."
+    }
+  },
+  {
+    "id": "planet",
+    "order": 9,
+    "title": { "en": "Planet", "it": "Pianeta" },
+    "text": {
+      "en": "Progress does not justify plundering the planet: the environmental and human cost of AI must be disclosed, reduced and compensated.",
+      "it": "Il progresso non giustifica il saccheggio del pianeta: il costo ambientale e umano dell'AI va dichiarato, ridotto e compensato."
+    }
+  },
+  {
+    "id": "prudence",
+    "order": 10,
+    "title": { "en": "Prudence", "it": "Prudenza" },
+    "text": {
+      "en": "Where risk is grave and irreversible, prudence outranks speed: what we cannot control, we must not release.",
+      "it": "Dove il rischio è grave e irreversibile, la prudenza vale più della velocità: ciò che non possiamo controllare non dobbiamo rilasciare."
+    }
+  }
+]

@@ -2,6 +2,7 @@
 import { ClientRouter } from "astro:transitions";
 import Navbar from "../components/layout/Navbar.astro";
 import Loader from "../components/ui/Loader.astro";
+import Cursor from "../components/ui/Cursor.astro";
 import "../styles/global.css";
 const { title = "Matteo Sonaglioni" } = Astro.props;
 ---
@@ -30,7 +31,7 @@ const { title = "Matteo Sonaglioni" } = Astro.props;
     <div transition:persist="loader-wrapper">
       <Loader />
     </div>
-
+    <Cursor />
     <Navbar />
     <main class="wrap">
       <slot />
@@ -50,6 +51,7 @@ const { title = "Matteo Sonaglioni" } = Astro.props;
       import { initCards } from "../scripts/animations/cards";
       import { initLoader } from "../scripts/animations/loader";
       import { initFooterMotion } from "../scripts/footer-motion";
+      import { initCursor } from "../scripts/cursor";
 
       let cleanupCards: (() => void) | undefined;
       let cleanupFooter: (() => void) | undefined;
@@ -57,20 +59,17 @@ const { title = "Matteo Sonaglioni" } = Astro.props;
       document.addEventListener("astro:page-load", () => {
         const loader = document.getElementById("site-loader");
 
-        // Usa l'oggetto window per persistere lo stato tra i cambi pagina
-        // ignorando l'errore TypeScript se presente
-        if (!(window as any).hasPlayedLoader) {
+        if (!sessionStorage.getItem("hasPlayedLoader")) {
           initLoader();
-          (window as any).hasPlayedLoader = true;
+          sessionStorage.setItem("hasPlayedLoader", "true");
         } else if (loader) {
-          // QUESTO È FONDAMENTALE: Se torni indietro, il loader HTML rinasce,
-          // dobbiamo nasconderlo subito per non far sembrare la pagina bloccata
           loader.style.display = "none";
           document.documentElement.style.overflow = "";
         }
 
-        initCards();
+        initCursor();
 
+        // Una sola init per pagina, con cleanup della precedente.
         cleanupCards?.();
         cleanupCards = initCards();
 

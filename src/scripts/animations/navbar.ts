@@ -1,5 +1,6 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { prefetch } from "astro:prefetch";
 import type { TransitionBeforeSwapEvent } from "astro:transitions/client";
 import { lenis } from "../lenis";
 
@@ -8,6 +9,10 @@ gsap.registerPlugin(ScrollTrigger);
 const STORAGE_KEY = "home-scroll-y";
 const DURATION = 0.65;
 const EASE = "power2.inOut";
+
+// Tween più breve per il ritorno in Home (back/forward del browser)
+const BACK_DURATION = 0.3;
+const BACK_EASE = "power3.out";
 
 // Unica fonte di verità: 0 = stretta (con padding laterali), 1 = tutta larga.
 // Il modulo viene caricato una sola volta, quindi sopravvive ai cambi pagina.
@@ -22,6 +27,25 @@ let hasLoadedOnce = false;
 function isHomePath(path: string) {
   const p = path.replace(/\/+$/, "");
   return p === "" || p === "/home";
+}
+
+function updateBackButton() {
+  const backBtn = document.querySelector<HTMLElement>("[data-back-btn]");
+  if (!backBtn) return;
+
+  if (isHomePath(location.pathname)) {
+    // Nascondi nella Home: scorre verso sinistra e svanisce
+    backBtn.classList.add("opacity-0", "-translate-x-4", "pointer-events-none");
+    backBtn.classList.remove("opacity-100", "translate-x-0");
+  } else {
+    // Mostra in altre directory: appare al centro della sua posizione
+    backBtn.classList.remove(
+      "opacity-0",
+      "-translate-x-4",
+      "pointer-events-none",
+    );
+    backBtn.classList.add("opacity-100", "translate-x-0");
+  }
 }
 
 function getElements() {
@@ -51,7 +75,12 @@ function syncFromScroll(progress: number) {
   render();
 }
 
-function goTo(target: number, animate: boolean) {
+function goTo(
+  target: number,
+  animate: boolean,
+  duration = DURATION,
+  ease = EASE,
+) {
   tween?.kill();
   const t = gsap.utils.clamp(0, 1, target);
 
@@ -65,8 +94,8 @@ function goTo(target: number, animate: boolean) {
   animating = true;
   tween = gsap.to(state, {
     p: t,
-    duration: DURATION,
-    ease: EASE,
+    duration,
+    ease,
     onUpdate: render,
     onComplete: () => {
       animating = false;
@@ -84,6 +113,8 @@ function destroyTrigger() {
 function initPage() {
   destroyTrigger();
 
+  updateBackButton();
+
   const { cards } = getElements();
   const navType = lastNavType;
   lastNavType = undefined;
@@ -99,8 +130,9 @@ function initPage() {
   }
 
   // Home: scroll ripristinato solo con back/forward del browser.
+  const isBack = navType === "traverse";
   let savedY: number | null = null;
-  if (navType === "traverse") {
+  if (isBack) {
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
       savedY = raw !== null ? Number(raw) : null;
@@ -124,7 +156,14 @@ function initPage() {
   });
   ScrollTrigger.refresh();
 
-  goTo(trigger.progress, animate);
+  // Ritorno in Home: tween più corto per non far sentire il ritardo.
+  // Per lo scatto istantaneo usa: goTo(trigger.progress, animate && !isBack);
+  goTo(
+    trigger.progress,
+    animate,
+    isBack ? BACK_DURATION : DURATION,
+    isBack ? BACK_EASE : EASE,
+  );
 }
 
 document.addEventListener("astro:before-swap", (e) => {
@@ -148,7 +187,23 @@ document.addEventListener("astro:before-swap", (e) => {
 document.addEventListener("astro:after-swap", render);
 
 document.addEventListener("astro:page-load", () => {
+  // Dalle pagine interne, pre-carica la Home così il ritorno non aspetta la rete.
+  if (!isHomePath(location.pathname)) prefetch("/home");
+
   requestAnimationFrame(initPage);
+  const backBtn = document.querySelector<HTMLElement>("[data-back-btn]");
+  if (backBtn && !backBtn.hasAttribute("data-listener")) {
+    backBtn.addEventListener("click", () => {
+      // Se c'è una storia e non proveniamo dall'esterno, torna indietro
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        // Fallback robusto se l'utente atterra direttamente su una sub-directory
+        window.location.href = "/home";
+      }
+    });
+    backBtn.setAttribute("data-listener", "true");
+  }
 });
 
 window.addEventListener("resize", () => {

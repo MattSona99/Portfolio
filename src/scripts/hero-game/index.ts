@@ -1,12 +1,14 @@
-import type { GameState } from './types';
-import { CONFIG } from './config';
-import { bindKeyboard } from './input';
-import { render } from './renderer';
-import { createHeroScroll, applyFearEyes, NEUTRAL_FX } from './scroll';
-import { createBlastOverlay } from './overlay';
+import type { GameState } from './core/types';
+import { CONFIG } from './core/config';
+import { bindKeyboard } from './core/input';
+import { render } from './core/renderer';
+import { createHeroScroll, applyFearEyes, NEUTRAL_FX } from './core/scroll';
+import { createBlastOverlay } from './core/overlay';
+import { createFlow, startTransition, resetFlow, disposeFlow } from './core/flow';
+import { renderPosition2D } from './level2/player';
 import { gsap } from 'gsap';
-import { generateCourse, createHoleState, canMove, handleArrival, handleDenied, resetCourse } from './course';
-import { createEyeState, createEyeAnimator, getRenderPosition } from './animations';
+import { generateCourse, createHoleState, canMove, handleArrival, handleDenied, resetCourse } from './level1/course';
+import { createEyeState, createEyeAnimator, getRenderPosition } from './level1/animations';
 
 export function mountHeroGame(shell: HTMLElement): () => void {
   const canvas = shell.querySelector<HTMLCanvasElement>(
@@ -20,6 +22,7 @@ export function mountHeroGame(shell: HTMLElement): () => void {
 
   const state: GameState = {
     fx: { ...NEUTRAL_FX },
+    flow: createFlow(),
     course,
     hole: createHoleState(course),
     bumping: false,
@@ -91,13 +94,28 @@ export function mountHeroGame(shell: HTMLElement): () => void {
   let pendingReset = false;
 
   const unbindInput = bindKeyboard(shell, state, {
-    // Senza focus (Hero scrollata via) i tasti freccia non muovono il cubo.
-    // Dopo il tuffo nel buco il gioco si ferma (per ora).
-    isEnabled: () => focused && !state.hole.done,
+    // Livello 1: due frecce insieme (diagonali isometriche). Livello 2: una freccia = un passo.
+    mode: () => (state.flow.level === 2 ? 'topdown' : 'iso'),
+    // Senza focus (Hero scrollata via) i tasti freccia non muovono il giocatore.
+    // Livello 1: dopo il tuffo nel buco i comandi si fermano finché il piano non è diventato 2D.
+    isEnabled: () => focused && (state.flow.level === 2 ? state.flow.ready : !state.hole.done),
     // Il buco si apre solo dopo aver attivato in ordine tutte le tile del percorso.
     canMove: (next) => canMove(state, next),
     // Avanzamento sulla guida, comparsa del buco e tuffo.
-    onArrive: (_pos, from) => handleArrival(state, from, { onImpact: () => eyeAnimator.land() }),
+    onArrive: (_pos, from) => {
+      if (state.flow.level === 2) {
+        // Livello 2: la tile appena lasciata si illumina per un attimo.
+        state.flow.stamp = { ...from };
+        state.flow.stampAt = performance.now();
+        return;
+      }
+
+      handleArrival(state, from, {
+        onImpact: () => eyeAnimator.land(),
+        // Cubo colorato di --fg: parte il passaggio al livello 2.
+        onComplete: () => startTransition(state),
+      });
+    },
     // Urto contro il muro invisibile: cubo rosso, occhi ">  <" e squash.
     onBump: (from) => {
       handleDenied(state, from);
@@ -121,14 +139,18 @@ export function mountHeroGame(shell: HTMLElement): () => void {
     const dt = state.lastFrame ? Math.min((time - state.lastFrame) / 1000, 0.05) : 0;
     state.lastFrame = time;
 
-    // Camera: insegue la posizione del cubo (interpolata durante il salto) con un po' di inerzia.
-    const focus = getRenderPosition(state);
-    const follow = 1 - Math.exp(-CONFIG.cameraFollow * dt);
+    // Camera: insegue il giocatore (interpolato durante il salto) con un po' di inerzia.
+    // Col piano 2D è quasi rigida e segue i fotogrammi dello scatto: il quadrato resta al
+    // centro e a scorrere è la griglia.
+    const plane = state.flow.plane;
+    const focus = plane >= 0.5 ? renderPosition2D(state) : getRenderPosition(state);
+    const rate = plane >= 1 ? CONFIG.topdown.cameraFollow : CONFIG.cameraFollow;
+    const follow = 1 - Math.exp(-rate * dt);
     state.camera.x += (focus.x - state.camera.x) * follow;
     state.camera.y += (focus.y - state.camera.y) * follow;
 
     // ── Scroll ──
-    const fx = heroScroll.read(width, height, time);
+    const fx = heroScroll.read(width, height, time, plane);
     state.fx = fx;
 
     if (fx.focused !== focused) {
@@ -146,10 +168,12 @@ export function mountHeroGame(shell: HTMLElement): () => void {
       }
     }
 
-    // Il gioco riparte da capo (cubo in (0, 0), buco nascosto) solo quando guida e buco
-    // sono già svaniti con lo scroll: la griglia è periodica, quindi non si vede nessun salto.
+    // Il gioco riparte da capo (livello 1, giocatore in (0, 0), buco nascosto) solo quando guida
+    // e buco sono già svaniti con lo scroll: la griglia è periodica, quindi non si vede nessun
+    // salto. Se era già al livello 2 il piano torna isometrico con l'animazione inversa.
     if (pendingReset && !focused && fx.worldAlpha < 0.02 && !state.target) {
       resetCourse(state);
+      resetFlow(state);
       pendingReset = false;
     }
 
@@ -163,11 +187,11 @@ export function mountHeroGame(shell: HTMLElement): () => void {
       state.hop = Math.sin(t * Math.PI) * CONFIG.hopHeight * (state.bumping ? 0.2 : 1);
     } else {
       state.roll = 0;
-      state.hop = focused && !state.hole.done ? Math.abs(Math.sin(time / 450)) * 2 : 0;
+      state.hop = focused && !state.hole.done && plane <= 0 ? Math.abs(Math.sin(time / 450)) * 2 : 0;
     }
 
     render(ctx, width, height, state, eyes);
-    blast.draw(state.fx, eyes);
+    blast.draw(state.fx, eyes, plane);
 
     raf = requestAnimationFrame(frame);
   };
@@ -191,6 +215,7 @@ export function mountHeroGame(shell: HTMLElement): () => void {
     themeObserver.disconnect();
     unbindInput();
     blast.destroy();
+    disposeFlow(state);
 
     // Ferma timer e timeline GSAP.
     eyeAnimator.stop();

@@ -1,0 +1,114 @@
+---
+chapter: equity-and-non-discrimination
+title: "Fairness, Inclusion and Non-Discrimination"
+summary: "AI must not make anyone pay for who they are. Fairness is measured and not assumed, accessibility and language inclusion are rights, and every person can contest an unfair decision."
+priority: high
+tags: [fairness, bias, accessibility, language-inclusion, non-discrimination, audits, recourse]
+related: [human-control, health, work, privacy-and-surveillance, training-and-limits, resources-and-global-distribution, education]
+version: "1.0"
+updatedAt: 2026-10-20
+status: draft
+---
+
+AI learns from the past, and the past is not fair. It also works at a scale at which a small unfairness becomes millions of unfair decisions, delivered with the appearance of objectivity. At the same time, AI can open doors: it can caption a lecture for a deaf student, translate a form for a newcomer and reveal discrimination that humans had missed. This chapter is about making sure that AI does the second more than the first.
+
+## Principle
+
+**11.1 Equal dignity, equal treatment.** AI must not treat people worse because of their origin, skin colour, sex, gender, age, disability, religion, language, sexual orientation, health, social background or any similar characteristic.
+
+**11.2 Fairness is a choice, and must be made openly.** Data reflects the world as it was, so a system trained on it can inherit and amplify past injustice. There are several ways to define fairness, and they can conflict. The choice must be made explicitly, justified and tested, together with the people it affects. Fair does not always mean identical: sometimes equal treatment requires different support.
+
+**11.3 What counts is the outcome, not only the intention.** A system that disadvantages a group is discriminatory even if no one meant it. Those who deploy AI in decisions about jobs, credit, housing, education, health care, benefits, insurance, migration, policing or justice must show that it is fair.
+
+**11.4 Represent everyone, in the data and in the room.** The data must reflect the people a system serves, and the teams that build, test and govern it must include diverse people, among them those most likely to be harmed.
+
+**11.5 Accessibility is a right, not an extra.** AI services must be usable by disabled people, older people, people with low literacy and people with limited connectivity or old devices. AI should also be used to widen access, for example through captions, reading aids and translation, designed with the people who need them.
+
+**11.6 Every language and culture counts.** AI must serve people in their own languages and dialects and respect their cultural contexts. English and the norms of a few countries are not the default of humanity. Communities keep authority over their own languages, knowledge and data.
+
+**11.7 No hidden proxies.** Systems must not reach through the back door what the law and ethics forbid at the front: using names, postcodes, accents, devices or browsing habits as stand-ins for protected characteristics in order to rank, price or exclude.
+
+**11.8 Benefits are shared.** The gains of AI must not flow only to those who are already advantaged. Cost, connectivity, education and quality of service should not divide the world into those who benefit and those who are processed by the system.
+
+**11.9 The right to recourse.** Anyone affected by an automated decision can find out about it, challenge it, reach a human being and obtain redress. Collective complaints and independent audits are part of that right.
+
+## Risks
+
+- **Inherited bias.** Records of past hiring, lending, policing or healthcare decisions carry past prejudice into new systems.
+- **Proxy discrimination.** Neutral-looking variables, such as postcode, surname, school or phone model, stand in for protected characteristics.
+- **Hidden intersections.** A system can look fair on average for women and for ethnic minorities, and still fail women who belong to a minority.
+- **Unequal accuracy.** Face recognition, speech recognition and medical tools may work worse for certain skin tones, accents, ages, genders and body types.
+- **Feedback loops.** Patrols sent to the same neighbourhoods generate more records there, and credit denied to a group makes its members look riskier.
+- **Stereotypes in generated content.** Images and text can reproduce prejudice, erase some groups or treat one group as the "default" person.
+- **Language gaps.** Most of the world's languages are poorly served, safety measures are often weaker outside the biggest languages, and dialects or accents can be penalised in hiring and moderation.
+- **Inaccessible design.** Interfaces that assume sight, hearing, speed or a stable connection exclude many, and monitoring tools can flag disabled people as suspicious.
+- **Digital divides.** Cost, devices and connectivity decide who gets the best tools, and poorer people may receive cheaper, weaker and less safe versions.
+- **Concentrated power.** A few companies in a few countries set norms for the whole world.
+- **Exclusion with a veneer of objectivity.** "The computer says no", with no reason and no appeal.
+- **Opaque systems and missing data.** Bias is hard to detect when decisions are unexplained and when the data needed to test for it is not collected, yet collecting sensitive data creates its own risks.
+- **Fairness-washing.** Superficial audits and a single flattering metric can give the appearance of fairness while harm continues.
+- **Cultural homogenisation.** Local ways of speaking, thinking and creating may be flattened by global systems.
+
+## Good practices
+
+- **Define fairness for each use.** State which harms matter, to which groups, by which measures, and what trade-offs have been accepted. Set thresholds before deployment, and involve affected communities and independent experts.
+- **Test across groups and their intersections.** Measure accuracy and error rates by sex, age, ethnicity, language, dialect and disability in realistic conditions. Where sensitive data is needed for testing, collect it lawfully, with consent and strong privacy safeguards, and use it for no other purpose.
+- **Improve the data.** Check for historical bias, document where data came from, represent under-served groups responsibly and with consent, and remove or neutralise proxies.
+- **Include people.** Bring members of affected groups into design, testing and adversarial evaluation, and compensate them for their work.
+- **Keep humans and recourse in consequential decisions.** Tell people when AI is involved, give understandable reasons, provide a way to appeal with a deadline and ensure a human reviews the case.
+- **Audit independently and continuously.** Carry out impact assessments before use and regular audits afterwards, publish the results, give regulators access and watch for drift.
+- **Design for accessibility.** Follow recognised accessibility standards, test with disabled users, offer alternatives to voice-only or visual-only interaction, use plain language, provide captions and sign language where relevant, allow users to set the pace and provide low-bandwidth modes.
+- **Invest in languages.** Build data and evaluations for under-served languages and dialects, led by the communities that speak them. Test safety in every language a product claims to support, and respect indigenous data sovereignty so that communities control their data and share in the benefits.
+- **Use AI to find and reduce discrimination.** Analyse existing human decisions for pay gaps, unequal approvals and other patterns, and develop assistive technologies.
+- **Make access affordable.** Offer free or low-cost versions of equal quality, support open and public-interest tools, and fund connectivity and training.
+- **Buy responsibly.** Public bodies should require evidence of fairness, audit rights and the ability to switch a system off.
+- **Guard against fairness-washing.** Have methods and results verified independently, and judge systems by real outcomes and not by one metric.
+- **Provide accessible complaint channels.** Make them available in several languages and formats.
+
+## Concrete example
+
+*Two hypothetical cases.*
+
+**A bank's loan decisions.** A bank uses AI to approve or reject loan applications.
+
+In the **wrong version**, the system learns from past approvals. Through proxies such as postcode, surname and type of phone, it keeps rejecting applicants from certain neighbourhoods and with part-time or migrant work histories. Overall accuracy looks high, rejections come with no explanation, there is no appeal and complaints are accepted only in one language.
+
+In the **right version**, the bank defines its fairness goals with consumer organisations, tests results by group, removes proxies and has a person review borderline cases and every rejection. Applicants receive reasons, can appeal in several languages and the bank publishes yearly audits. When a gap is found, it is fixed.
+
+**A voice assistant for public services.** A city launches a voice assistant for citizens.
+
+In the **wrong version**, it understands standard accents and fails with older people, regional accents, speech impairments and several minority languages. There is no other way to reach the service.
+
+In the **right version**, it is tested with those groups before launch. A text option, a human telephone line and a sign-language video channel are available, and results by group are published.
+
+## What must not be done
+
+- Deploying systems in high-stakes decisions without testing for discrimination across groups.
+- Using protected characteristics, or proxies for them, to rank, price or exclude people unlawfully.
+- Hiding behind "the data is neutral" or "the model is a black box".
+- Scoring people on their general social behaviour.
+- Releasing systems that stereotype, demean or erase groups, or that give some languages and dialects lower quality and weaker safeguards.
+- Making essential services available only through AI, with no human alternative, for people who cannot use it.
+- Excluding disabled people from design and testing, or using monitoring tools that penalise them.
+- Selling poorer countries and communities lower-quality or less safe versions.
+- Taking languages, data or cultural knowledge from communities without their consent and without benefit to them.
+- Fairness-washing: claiming fairness through superficial audits or by tuning a single measure.
+- Retaliating against people who report discrimination.
+- Using sensitive data collected for fairness testing for any other purpose.
+
+## How to remedy
+
+When an AI system is found to discriminate or to exclude:
+
+1. **Stop or limit.** Suspend the system for the decisions concerned, or add human review, and inform those affected.
+2. **Look back.** Identify the people affected by earlier decisions and reopen their cases.
+3. **Redress.** Reverse unfair decisions, compensate the harm and apologise, through accessible channels in several languages.
+4. **Find the root causes.** Examine the data, labels, proxies, thresholds, design, context of use and the lack of testing and participation.
+5. **Fix the system, not only the metric.** Retrain, rebalance, remove proxies, redesign the process, repair accessibility barriers and add languages.
+6. **Re-audit independently.** Verify the repair before the service is restored, publish the results and involve the communities affected.
+7. **Report and answer for it.** Inform the regulator or the equality body, and make decision-makers accountable.
+8. **Keep watching.** Update standards, share the findings and monitor continuously.
+
+**If you think an automated system has treated you unfairly,** ask whether AI was used, request an explanation and a human review, keep a record of what happened and contact the organisation responsible, a consumer or equality body, or the data-protection authority. Support organisations and legal advice are available in many countries.
+
+Fairness is not a feature to be added once the product is finished. It is a measure of whether the product deserves to exist.

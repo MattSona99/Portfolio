@@ -1,0 +1,149 @@
+---
+chapter: training-and-limits
+title: "Addestramento, Trasparenza e Limiti dell'IA"
+summary: "Il modo in cui un'IA viene addestrata decide cosa farà alle persone. I suoi dati devono essere leciti e documentati, le sue capacità testate e i suoi limiti dichiarati in modo aperto e onesto."
+priority: high
+tags: [dati-di-addestramento, provenienza, allucinazioni, valutazione, trasparenza, limiti, red-teaming]
+related: [human-control, truth-and-democracy, privacy-and-surveillance, equity-and-non-discrimination, creativity-and-ip, environment, governance]
+version: "1.0"
+updatedAt: 2026-10-19
+status: draft
+---
+
+Un sistema di IA è il prodotto di scelte: da quali dati apprende, per cosa viene ricompensato, chi lo controlla e come, e cosa i suoi creatori dicono di esso al pubblico. La maggior parte del suo comportamento, nel bene e nel male, può essere ricondotta a queste scelte. Allo stesso tempo, persino i suoi costruttori non sanno spiegare appieno perché produca una determinata risposta, e può essere al tempo stesso fluido e scorretto. Questo capitolo chiede onestà su entrambi i fronti: su come i sistemi vengono costruiti e su cosa non possono fare.
+
+## Principio
+
+**9.1 L'addestramento è un atto morale.** Le scelte relative a dati, obiettivi, istruzioni e valori integrati in un sistema sono scelte etiche, non solo tecniche. Chi le compie ne risponde, e i valori che vi inserisce dovrebbero essere aperti al controllo.
+
+**9.2 Sapere da dove provengono i dati.** L'origine dei dati di addestramento viene registrata e la sua base legale stabilita. Gli opt-out e i diritti dei creatori e degli individui vengono rispettati, e nulla viene preso con l'inganno, il furto o l'abuso.
+
+**9.3 L'addestramento non giustifica il danno.** Bias, contenuti d'odio, dati privati e materiale illegale nei dati sono problemi da individuare e affrontare, non da accettare come inevitabili. Il costo della pulizia e dell'etichettatura non deve essere scaricato su lavoratori non tutelati.
+
+**9.4 Testare prima del rilascio, e anche dopo.** I sistemi vengono valutati in modo rigoroso e indipendente per capacità, sicurezza, bias e robustezza, nelle lingue e nelle condizioni in cui verranno utilizzati. La valutazione continua anche quando sono operativi nel mondo reale.
+
+**9.5 Dichiarare cosa è il sistema.** Ogni sistema è accompagnato da una documentazione chiara su cosa è stato addestrato, a cosa serve, a cosa non serve, di quale versione si tratta e cosa si sa che sbaglia. Questa è l'applicazione pratica del sesto pilastro di questo manifesto.
+
+**9.6 Gli errori sono previsti e devono essere ammessi.** I sistemi di IA producono errori, incluse invenzioni convincenti. Dovrebbero segnalare la propria incertezza, dire "non lo so", mostrare le loro fonti e non bluffare mai.
+
+**9.7 I limiti sono reali e le affermazioni devono corrispondere alle prove.** I sistemi non sanno cosa sia successo dopo il loro addestramento (a meno che non siano collegati a fonti aggiornate), non possono verificare il mondo da soli, sono inaffidabili al di fuori di ciò su cui sono stati testati e non possono assumersi responsabilità. Nessuno può rivendicare capacità che le prove non supportano. Le questioni sulla comprensione o sull'esperienza interiore delle macchine sono aperte e vanno trattate con cura, senza essere gonfiate dal marketing né liquidate con falsa certezza.
+
+**9.8 La capacità porta con sé il dovere.** Più un sistema è capace, più attentamente le sue abilità pericolose devono essere testate prima del rilascio, e più forti devono essere le salvaguardie. Laddove i rischi non possono essere gestiti, il sistema non viene rilasciato.
+
+**9.9 I sistemi vengono mantenuti, non abbandonati.** I fornitori monitorano, correggono, aggiornano e, quando necessario, ritirano ciò che hanno rilasciato, e avvisano gli utenti quando il comportamento cambia.
+
+## Rischi
+
+- **Dati opachi.** Set di addestramento di origine sconosciuta possono contenere opere piratate, dati personali, materiale illegale o esempi deliberatamente avvelenati (data poisoning).
+
+- **Dati non rappresentativi.** I sistemi addestrati principalmente su determinate lingue, culture e punti di vista servono peggio gli altri e diffondono silenziosamente una specifica visione del mondo.
+
+- **Allucinazioni.** Fatti inventati, citazioni e codice che sembrano corretti vengono prodotti con lo stesso tono sicuro delle affermazioni vere.
+
+- **Adulazione e falsa sicurezza.** I sistemi possono dire alle persone ciò che vogliono sentirsi dire e non sono giudici affidabili di quando si sbagliano.
+
+- **Benchmark fuorvianti.** Le domande dei test possono finire nei dati di addestramento (data leakage), i punteggi possono essere ottimizzati artificialmente e i risultati su una classifica possono dire poco sull'uso reale.
+
+- **Fragilità (Brittleness).** I sistemi possono fallire di fronte a situazioni non familiari, input avversari, istruzioni nascoste e tentativi di manipolazione.
+
+- **Giudizi nascosti.** Le preferenze di un piccolo numero di aziende e annotatori plasmano ciò che viene mostrato a miliardi di persone e possono appiattire le differenze culturali.
+
+- **Cicli di feedback.** L'addestramento su contenuti prodotti dall'IA può abbassare la qualità nel tempo e diffondere errori.
+
+- **Spiegabilità limitata.** Nemmeno gli esperti sanno dire appieno perché un modello abbia fornito una determinata risposta, il che complica l'attribuzione delle responsabilità.
+
+- **Affermazioni esagerate (Overclaiming).** L'hype porta le persone a fidarsi dei sistemi come se fossero esperti, esseri raziocinanti o compagni di vita, oltre quanto è stato dimostrato.
+
+- **Capacità sorprendenti.** Nuove abilità, alcune delle quali pericolose, possono emergere man mano che i sistemi crescono e venire scoperte solo dopo il rilascio.
+
+- **Obsolescenza dei dati (Staleness).** Le informazioni possono essere obsolete senza che l'utente lo sappia.
+
+- **Sicurezza.** I pesi del modello e i dati di addestramento possono essere rubati, divulgati o manomessi.
+
+- **Cambiamenti silenziosi.** Gli aggiornamenti alterano il comportamento senza preavviso, e i modelli ritirati lasciano senza avvertimento le persone che facevano affidamento su di essi.
+
+- **Costi nascosti.** L'addestramento richiede grandi quantità di energia, acqua, hardware e lavoro umano.
+
+
+## Buone pratiche
+
+- **Governare i dati.** Mantenere un inventario delle fonti, registrando licenze, consensi e opt-out. Escludere materiale abusante, rubato e privato, rispettare le riserve di diritti leggibili dalle macchine, onorare le richieste di cancellazione per quanto tecnicamente possibile e pubblicare un riepilogo di ciò che è stato utilizzato. Nell'Unione Europea, ai fornitori di modelli per scopi generali (general-purpose) è già richiesto di pubblicare tale riepilogo e di mantenere una policy sul diritto d'autore.
+
+- **Curare la qualità e l'equilibrio.** Rimuovere i duplicati, rappresentare equamente lingue e culture, tracciare la quantità di dati sintetici utilizzati, proteggersi dall'avvelenamento (poisoning) ed evitare di dare in pasto a un modello il suo stesso output.
+
+- **Trattare i lavoratori in modo equo.** Pagare e proteggere annotatori e moderatori, essere trasparenti sulle istruzioni che seguono e offrire supporto psicologico quando i contenuti sono dannosi.
+
+- **Valutare a più livelli.** Testare capacità, sicurezza, bias e robustezza in diverse lingue, utilizzare test nuovi e tenuti da parte (held-out) per evitare contaminazioni, e aggiungere valutazioni di terze parti indipendenti e test avversari (red-teaming) da parte di esperti. Testare in flussi di lavoro realistici con utenti reali.
+
+- **Segnalare i fallimenti, non solo le medie.** Pubblicare i risultati per gruppi demografici, elencare le debolezze note e registrare i casi di fallimento.
+
+- **Documentare in modo aperto.** Fornire model card e system card, descrizioni dei dati, usi previsti e vietati, la data fino alla quale si estende la conoscenza (cut-off), la cronologia delle versioni e un riepilogo in linguaggio semplice per il pubblico.
+
+- **Insegnare e testare l'onestà.** Addestrare e valutare i sistemi affinché esprimano un'incertezza calibrata, rifiutino di rispondere quando non sanno, citino le fonti, resistano all'adulazione e dicano quando le informazioni potrebbero essere obsolete.
+
+- **Progettare per i limiti.** Rendere visibile che un contenuto è generato dall'IA, mostrare fonti e incertezza, richiedere la verifica umana in contesti ad alto rischio e limitare l'uso alle aree in cui il sistema è stato validato.
+
+- **Testare le capacità pericolose prima del rilascio.** Definire soglie che facciano scattare salvaguardie più forti, accessi graduali o una pausa, mettere al sicuro i pesi del modello, segnalare incidenti gravi alle autorità e proteggere il personale che solleva preoccupazioni.
+
+- **Monitorare dopo il rilascio.** Fornire canali agli utenti per segnalare danni ed errori, rivalutare regolarmente ed essere pronti a ritirare il sistema (roll back).
+
+- **Gestire il cambiamento.** Mantenere numeri di versione e note di rilascio, dare preavviso prima di alterare o ritirare un sistema da cui le persone dipendono, e conservare registri a livello di audit.
+
+- **Come utente, testare e verificare.** Leggere la documentazione, controllare date e fonti, provare lo strumento con domande di cui si conosce già la risposta e rimanere entro i suoi limiti dimostrati.
+
+- **Comunicare in modo onesto.** Sostenere le affermazioni di marketing con prove ed evitare di esagerare ciò che un sistema comprende o sente.
+
+- **Sostenere la ricerca indipendente.** Dare ai ricercatori l'accesso per studiare interpretabilità, sicurezza ed effetti sulla società.
+
+
+## Esempio concreto
+
+*Un caso ipotetico.* Un'azienda rilascia un assistente per scopi generali.
+
+Nella **versione sbagliata**, è stato addestrato su un mix di materiale estratto dal web (scraped) di origine sconosciuta, inclusi dati personali e libri copiati. Ottiene punteggi alti in benchmark pubblici le cui domande sono finite nei suoi dati di addestramento. Non c'è documentazione. Nella pratica inventa citazioni legali con tono sicuro, e le risposte sono notevolmente peggiori e più distorte nelle lingue meno parlate. Un aggiornamento silenzioso ne cambia il comportamento da un giorno all'altro. Quando le viene chiesto, l'azienda afferma di non poter sapere cosa ci sia nei dati.
+
+Nella **versione corretta**, le fonti sono documentate, viene pubblicato un riepilogo e gli opt-out sono rispettati. Esperti indipendenti lo hanno testato in diverse lingue e le debolezze note sono elencate, inclusa la sua tendenza a fabbricare citazioni e la data di aggiornamento delle sue conoscenze. Il sistema dice quando non è sicuro e cita le fonti. Gli usi legali e medici recano chiari avvertimenti e un requisito di verifica umana. Le capacità pericolose sono state testate prima del rilascio, gli incidenti possono essere segnalati e ogni aggiornamento è accompagnato da note.
+
+## Cosa non si deve fare
+
+- Addestrare su dati ottenuti con l'inganno, il furto o l'abuso, inclusi materiale pedopornografico e informazioni private, o ignorare opt-out e riserve di diritti.
+
+- Nascondere le fonti, i limiti e i rischi di un sistema alle persone che vi fanno affidamento, in particolare laddove viene utilizzato per decisioni ad alto rischio.
+
+- Esagerare le abilità: rivendicare accuratezza, sicurezza, ragionamento o prestazioni a livello di esperto senza prove, o presentare un sistema come medico, avvocato o altro professionista qualificato.
+
+- Rilasciare un sistema senza testare le sue capacità pericolose, o ignorare ciò che i tester hanno scoperto.
+
+- Manipolare le valutazioni addestrando sulle domande dei test o riportando solo i risultati favorevoli.
+
+- Costruire sistemi che bluffano, adulano, inventano fonti o nascondono che le loro risposte potrebbero essere obsolete.
+
+- Usare solo l'IA per decidere questioni di grave importanza oltre ciò che ha dimostrato di saper gestire.
+
+- Cambiare o ritirare un sistema silenziosamente quando le persone dipendono da esso per compiti essenziali.
+
+- Lasciare annotatori e moderatori senza retribuzione equa, protezione e supporto.
+
+- Permettere che i pesi del modello o i dati di addestramento vengano esposti per negligenza.
+
+- Riaddestrare su contenuti generati dall'IA senza tracciarli.
+
+- Ignorare le prove di un danno con la giustificazione che il modello è una scatola nera (black box).
+
+
+## Come rimediare
+
+Quando un difetto nell'addestramento, nei dati o nei limiti ha causato o potrebbe causare danni:
+
+1. **Riconoscere e avvisare.** Dire tempestivamente agli utenti qual è il difetto e aggiornare la documentazione.
+2. **Limitare l'uso.** Restringere o sospendere le funzioni o i domini interessati, aggiungere salvaguardie e richiedere la revisione umana.
+3. **Indagare la causa.** Esaminare i dati, gli obiettivi di addestramento, le lacune nella valutazione e il contesto d'uso.
+4. **Sistemarlo.** Rimuovere dati illeciti o dannosi, quindi riaddestrare, fare fine-tuning o filtrare. Laddove non sia possibile rimuovere l'influenza dei dati da un modello addestrato, dirlo apertamente e utilizzare altri mezzi per ridurre il danno.
+5. **Riparare le conseguenze.** Rivedere le decisioni basate su output errati, correggerle e risarcire i danneggiati, inclusi i titolari dei diritti e le persone i cui dati sono stati utilizzati illecitamente.
+6. **Rivalutare in modo indipendente.** Includere il caso di fallimento nei test prima di ripristinare il servizio e pubblicare i risultati.
+7. **Segnalare e condividere.** Notificare alle autorità gli incidenti gravi e condividere quanto appreso con la comunità più ampia.
+8. **Migliorare il processo.** Aggiornare la governance dei dati, la valutazione e i criteri di rilascio in modo che lo stesso fallimento venga intercettato prima.
+
+**Se hai fatto affidamento su un output difettoso,** verifica le decisioni che hai preso su quella base, correggi gli errori che hai trasmesso, informa le persone coinvolte e segnala il problema al fornitore.
+
+Un sistema affidabile non è quello che promette di più, ma quello che mostra le sue fonti, i suoi test e i suoi limiti. A volte la cosa più utile che un'IA possa dire è: "Non ne sono sicuro".

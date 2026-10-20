@@ -4,11 +4,25 @@ import Box from "../components/ui/Box.astro";
 import PageCard from "../components/home/PageCard.astro";
 import HeroGame from "../components/home/HeroGame.astro";
 import Footer from "../components/home/Footer.astro";
+import { ui } from "../i18n/ui";
 
 const cards = [
-  { title: "GitHub", href: "/github", accent: "github" },
-  { title: "Curriculum", href: "/curriculum", accent: "curriculum" },
-  { title: "Manifesto", href: "/manifest", accent: "manifest" },
+  {
+    title: { en: ui.en.home.cards.github, it: ui.it.home.cards.github },
+    href: "https://github.com/matttsona",
+    accent: "github",
+    external: true,
+  },
+  {
+    title: { en: ui.en.home.cards.curriculum, it: ui.it.home.cards.curriculum },
+    href: "/curriculum",
+    accent: "curriculum",
+  },
+  {
+    title: { en: ui.en.home.cards.manifest, it: ui.it.home.cards.manifest },
+    href: "/manifest",
+    accent: "manifest",
+  },
 ] as const;
 ---
 

@@ -26,8 +26,36 @@ export type HoleState = {
   done: boolean; // il cubo è nel buco (per ora il gioco si ferma qui)
 };
 
+// Passaggio dal livello 1 (cubo isometrico) al livello 2 (quadrato visto dall'alto).
+export type Flow = {
+  level: 1 | 2;
+  started: boolean; // transizione avviata (livello 1 completato)
+  vanish: number; // 0 → 1: il percorso verde scompare
+  plane: number; // 0 → 1: il piano passa da isometrico 3D a 2D visto dall'alto
+  ready: boolean; // il quadrato 2D è controllabile
+  waveAt: number; // istante (ms) in cui parte l'onda dal quadrato (-Infinity = non ancora)
+  waveFrom: Point; // tile da cui parte l'onda
+  stamp: Point | null; // ultima tile lasciata dal quadrato (si illumina per un attimo)
+  stampAt: number; // istante (ms) in cui è stata lasciata
+};
+
+// Parametri di vista calcolati a ogni frame da renderer.ts e usati dai disegni dei livelli.
+export type View = {
+  width: number;
+  height: number;
+  originX: number; // dove cade a schermo il centro a terra della tile (0, 0), senza tremore
+  originY: number;
+  gx: number; // come sopra, con un po' di tremore (griglia, guida, buco, onda)
+  gy: number;
+  vScale: number; // compressione verticale del piano (schiacciamento da scroll)
+  plane: number; // 0 → 1: isometrico → visto dall'alto
+  floatY: number; // quanto il giocatore "galleggia" rispetto al layout base (scroll)
+  now: number; // performance.now()
+};
+
 export type GameState = {
   fx: HeroFx; // effetti guidati dallo scroll (schiacciamento, esplosione, focus)
+  flow: Flow;
   course: Course;
   hole: HoleState;
   bumping: boolean; // il cubo sta urtando il muro invisibile (mossa rifiutata)

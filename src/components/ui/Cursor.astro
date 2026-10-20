@@ -1,0 +1,52 @@
+---
+// src/components/ui/Cursor.astro
+---
+<div
+  id="custom-cursor"
+  transition:persist="cursor"
+  class="pointer-events-none fixed left-0 top-0 z-[10000] hidden mix-blend-difference md:block"
+  style="color: white;"
+>
+  {/* Coordinate vicino al cursore */}
+  <div
+    id="cursor-coords"
+    class="absolute left-6 top-6 whitespace-nowrap font-bespoke text-xs font-bold tracking-[0.2em] opacity-50 tabular-nums"
+  >
+    X: 000 Y: 000
+  </div>
+
+  {/* Wrapper centrale (Punto + Croce) */}
+  <div id="cursor-center" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+    {/* Punto centrale */}
+    <div class="absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-current"></div>
+    {/* Linea X */}
+    <div class="absolute left-1/2 top-1/2 h-[1px] w-6 -translate-x-1/2 -translate-y-1/2 bg-current opacity-40"></div>
+    {/* Linea Y */}
+    <div class="absolute left-1/2 top-1/2 h-6 w-[1px] -translate-x-1/2 -translate-y-1/2 bg-current opacity-40"></div>
+  </div>
+
+  {/* Wrapper delle 4 parentesi angolari */}
+  {/* Di base è largo 32px (w-8 h-8), al passaggio del mouse assumerà le dimensioni dell'elemento */}
+  <div
+    id="cursor-brackets"
+    class="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 will-change-transform"
+  >
+    {/* Top Left ⌜ */}
+    <div class="absolute left-0 top-0 h-2.5 w-2.5 border-l-[1.5px] border-t-[1.5px] border-current"></div>
+    {/* Top Right ⌝ */}
+    <div class="absolute right-0 top-0 h-2.5 w-2.5 border-r-[1.5px] border-t-[1.5px] border-current"></div>
+    {/* Bottom Left ⌞ */}
+    <div class="absolute bottom-0 left-0 h-2.5 w-2.5 border-b-[1.5px] border-l-[1.5px] border-current"></div>
+    {/* Bottom Right ⌟ */}
+    <div class="absolute bottom-0 right-0 h-2.5 w-2.5 border-b-[1.5px] border-r-[1.5px] border-current"></div>
+  </div>
+</div>
+
+<style is:global>
+  /* Nasconde il cursore di default solo se il dispositivo ha un mouse (no su mobile) */
+  @media (pointer: fine) {
+    body, a, button, [data-card] {
+      cursor: none !important;
+    }
+  }
+</style>

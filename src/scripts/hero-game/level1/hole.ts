@@ -1,6 +1,6 @@
-import { CONFIG, TILE } from './config';
-import { mixColors } from './color';
-import type { Palette } from './types';
+import { CONFIG, TILE } from '../core/config';
+import { mixColors } from '../core/color';
+import type { Palette } from '../core/types';
 
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 const smooth = (t: number) => t * t * (3 - 2 * t);

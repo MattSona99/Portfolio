@@ -4,25 +4,36 @@ import type { GameState, MoveDir, Point } from './types';
 
 const ARROWS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 
+// Livello 1 (isometrico): serve una combinazione di due frecce, come le diagonali del piano.
 // Quanto cambia la posizione logica (x, y) per ogni direzione visiva.
-const STEP: Record<MoveDir, Point> = {
+const ISO_STEP: Record<MoveDir, Point> = {
   downRight: { x: 1, y: 0 },
   downLeft: { x: 0, y: 1 },
   upLeft: { x: -1, y: 0 },
   upRight: { x: 0, y: -1 },
 };
 
+// Livello 2 (visto dall'alto): una freccia = un passo.
+const TOPDOWN_STEP: Record<string, Point> = {
+  ArrowUp: { x: 0, y: -1 },
+  ArrowDown: { x: 0, y: 1 },
+  ArrowLeft: { x: -1, y: 0 },
+  ArrowRight: { x: 1, y: 0 },
+};
+
 type InputHooks = {
+  // Modalità dei comandi: 'iso' (due frecce insieme) o 'topdown' (una freccia).
+  mode?: () => 'iso' | 'topdown';
   // Chiamato quando parte un salto: qui si annullano le animazioni idle.
   onMoveStart?: () => void;
-  // Chiamato quando il cubo atterra e non c'è un altro salto in coda.
+  // Chiamato quando il giocatore atterra e non c'è un altro salto in coda.
   onLand?: () => void;
-  // Se restituisce false (Hero senza focus) i tasti freccia non muovono il cubo.
+  // Se restituisce false (Hero senza focus) i tasti freccia non muovono il giocatore.
   isEnabled?: () => boolean;
-  // Chiamato quando il cubo arriva su una nuova tile (posizione già aggiornata).
+  // Chiamato quando il giocatore arriva su una nuova tile (posizione già aggiornata).
   onArrive?: (position: Point, from: Point) => void;
-  // Se restituisce false la mossa è rifiutata (es. ingresso nel buco a percorso incompleto):
-  // il cubo urta un muro invisibile e rimbalza indietro (vedi onBump).
+  // Solo modalità 'iso'. Se restituisce false la mossa è rifiutata (es. ingresso nel buco a
+  // percorso incompleto): il cubo urta un muro invisibile e rimbalza indietro (vedi onBump).
   canMove?: (next: Point) => boolean;
   // Chiamato nell'istante dell'impatto contro il muro invisibile.
   onBump?: (from: Point, next: Point) => void;
@@ -35,18 +46,32 @@ export function bindKeyboard(
 ): () => void {
   // Tasti premuti: per istanza, non condivisi a livello di modulo.
   const keysPressed = new Set<string>();
+  // Ordine di pressione: in modalità 'topdown' l'ultimo tasto premuto ha la precedenza.
+  const order: string[] = [];
 
   shell.tabIndex = 0;
   const focusShell = () => shell.focus();
   shell.addEventListener('pointerdown', focusShell);
 
-  const readDirection = (): MoveDir | null => {
+  const isTopdown = () => (hooks.mode?.() ?? 'iso') === 'topdown';
+
+  const readMove = (): { dir: MoveDir | null; step: Point } | null => {
+    if (isTopdown()) {
+      for (let i = order.length - 1; i >= 0; i--) {
+        const step = TOPDOWN_STEP[order[i]];
+        if (step) return { dir: null, step };
+      }
+      return null;
+    }
+
     const k = keysPressed;
-    if (k.has('ArrowDown') && k.has('ArrowRight')) return 'downRight';
-    if (k.has('ArrowDown') && k.has('ArrowLeft')) return 'downLeft';
-    if (k.has('ArrowUp') && k.has('ArrowLeft')) return 'upLeft';
-    if (k.has('ArrowUp') && k.has('ArrowRight')) return 'upRight';
-    return null;
+    let dir: MoveDir | null = null;
+    if (k.has('ArrowDown') && k.has('ArrowRight')) dir = 'downRight';
+    else if (k.has('ArrowDown') && k.has('ArrowLeft')) dir = 'downLeft';
+    else if (k.has('ArrowUp') && k.has('ArrowLeft')) dir = 'upLeft';
+    else if (k.has('ArrowUp') && k.has('ArrowRight')) dir = 'upRight';
+
+    return dir ? { dir, step: ISO_STEP[dir] } : null;
   };
 
   // Mossa rifiutata: il cubo parte verso la tile, urta il muro invisibile a metà strada
@@ -80,33 +105,34 @@ export function bindKeyboard(
     // Già in volo: ignora finché non atterra.
     if (state.target) return;
 
-    const dir = readDirection();
-    if (!dir) return;
+    const move = readMove();
+    if (!move) return;
 
-    const step = STEP[dir];
+    const topdown = isTopdown();
     const next: Point = {
-      x: state.position.x + step.x,
-      y: state.position.y + step.y,
+      x: state.position.x + move.step.x,
+      y: state.position.y + move.step.y,
     };
 
     const from: Point = { ...state.position };
 
-    if (hooks.canMove && !hooks.canMove(next)) {
-      bump(dir, next, from);
+    if (!topdown && move.dir && hooks.canMove && !hooks.canMove(next)) {
+      bump(move.dir, next, from);
       return;
     }
 
     state.target = next;
-    state.moveDir = dir;
+    state.moveDir = move.dir;
     state.moveProgress = 0;
 
     hooks.onMoveStart?.();
 
-    // Un solo tween: moveProgress guida posizione, ribaltamento e salto (vedi index.ts / cube.ts).
+    // Un solo tween: moveProgress guida posizione, ribaltamento e salto (livello 1)
+    // oppure i fotogrammi dello scatto (livello 2, ease lineare: a scatti ci pensa il disegno).
     gsap.to(state, {
       moveProgress: 1,
-      duration: CONFIG.moveDuration / 1000,
-      ease: 'power2.inOut',
+      duration: (topdown ? CONFIG.topdown.moveMs : CONFIG.moveDuration) / 1000,
+      ease: topdown ? 'none' : 'power2.inOut',
       onComplete: () => {
         state.position = next;
         state.target = null;
@@ -116,9 +142,9 @@ export function bindKeyboard(
 
         hooks.onArrive?.(next, from);
 
-        // Tasti ancora premuti → salta di nuovo subito, altrimenti atterraggio.
+        // Tasti ancora premuti → muoviti di nuovo subito, altrimenti atterraggio.
         const enabled = hooks.isEnabled?.() ?? true;
-        if (enabled && readDirection()) tryMove();
+        if (enabled && readMove()) tryMove();
         else if (enabled) hooks.onLand?.();
       },
     });
@@ -130,6 +156,7 @@ export function bindKeyboard(
     // Hero senza focus (scroll): i tasti freccia tornano al browser.
     if (!(hooks.isEnabled?.() ?? true)) {
       keysPressed.clear();
+      order.length = 0;
       return;
     }
 
@@ -137,17 +164,24 @@ export function bindKeyboard(
     if ((event.target as HTMLElement)?.closest('input, textarea, button, select')) return;
 
     event.preventDefault();
+
     keysPressed.add(event.key);
+    if (!order.includes(event.key)) order.push(event.key);
 
     tryMove();
   };
 
   const onKeyUp = (event: KeyboardEvent) => {
     keysPressed.delete(event.key);
+    const i = order.indexOf(event.key);
+    if (i >= 0) order.splice(i, 1);
   };
 
   // Se la finestra perde il focus il keyup non arriva mai: evita tasti "incollati".
-  const onBlur = () => keysPressed.clear();
+  const onBlur = () => {
+    keysPressed.clear();
+    order.length = 0;
+  };
 
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);

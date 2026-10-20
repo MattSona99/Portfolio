@@ -1,0 +1,108 @@
+---
+chapter: training-and-limits
+title: "Training, Transparency and the Limits of AI"
+summary: "How an AI is trained decides what it does to people. Its data must be lawful and documented, its abilities tested, and its limits stated openly and honestly."
+priority: high
+tags: [training-data, provenance, hallucination, evaluation, transparency, limits, red-teaming]
+related: [human-control, truth-and-democracy, privacy-and-surveillance, equity-and-non-discrimination, creativity-and-ip, environment, governance]
+version: "1.0"
+updatedAt: 2026-10-19
+status: draft
+---
+
+An AI system is the product of choices: what data it learns from, what it is rewarded for, who checks it and how, and what its makers tell the public about it. Most of its behaviour, good and bad, can be traced back to those choices. At the same time, even its builders cannot fully explain why it produces a given answer, and it can be fluent and wrong at once. This chapter asks for honesty at both ends: about how systems are made, and about what they cannot do.
+
+## Principle
+
+**9.1 Training is a moral act.** The choices of data, objectives, instructions and values built into a system are ethical choices, not only technical ones. Those who make them answer for them, and the values they embed should be open to scrutiny.
+
+**9.2 Know where the data comes from.** The origin of training data is recorded and its lawful basis established. Opt-outs and the rights of creators and of individuals are respected, and nothing is taken by deception, theft or abuse.
+
+**9.3 Training does not excuse harm.** Bias, hateful content, private data and illegal material in the data are problems to be found and addressed, not accepted as unavoidable. The cost of cleaning and labelling must not be pushed onto unprotected workers.
+
+**9.4 Test before release, and after.** Systems are evaluated rigorously and independently for capability, safety, bias and robustness, in the languages and conditions in which they will be used. Evaluation continues once they are in the world.
+
+**9.5 Say what the system is.** Every system comes with plain documentation of what it was trained on, what it is for, what it is not for, which version it is and what it is known to get wrong. This is the sixth pillar of this manifesto in practice.
+
+**9.6 Mistakes are expected and must be admitted.** AI systems produce errors, including convincing inventions. They should signal their uncertainty, say "I do not know", show their sources and never bluff.
+
+**9.7 The limits are real, and claims must match evidence.** Systems do not know what happened after their training unless they are connected to current sources, cannot verify the world on their own, are unreliable outside what they were tested on and cannot bear responsibility. No one may claim abilities the evidence does not support. Questions about understanding or inner experience in machines are open and are treated with care, neither inflated by marketing nor dismissed with false certainty.
+
+**9.8 Capability brings duty.** The more capable a system is, the more carefully its dangerous abilities must be tested before release, and the stronger the safeguards must be. Where risks cannot be managed, the system is not released.
+
+**9.9 Systems are maintained, not abandoned.** Providers monitor, correct, update and, when necessary, withdraw what they have released, and they tell users when behaviour changes.
+
+## Risks
+
+- **Opaque data.** Training sets of unknown origin can contain pirated works, personal data, illegal material or deliberately poisoned examples.
+- **Unrepresentative data.** Systems trained mainly on certain languages, cultures and viewpoints serve others worse, and quietly spread one view of the world.
+- **Hallucination.** Invented facts, citations and code that looks correct are produced in the same confident tone as true statements.
+- **Flattery and false confidence.** Systems can tell people what they want to hear, and are not reliable judges of when they are wrong.
+- **Misleading benchmarks.** Test questions can leak into training, scores can be tuned for, and results on a leaderboard may say little about real use.
+- **Brittleness.** Systems can fail on unfamiliar situations, adversarial inputs, hidden instructions and attempts to manipulate them.
+- **Hidden judgements.** The preferences of a small number of companies and annotators shape what billions of people are shown, and can flatten cultural differences.
+- **Feedback loops.** Training on content produced by AI can lower quality over time and spread errors.
+- **Limited explainability.** Even experts cannot fully say why a model gave a particular answer, which complicates accountability.
+- **Overclaiming.** Hype leads people to trust systems as experts, reasoners or companions beyond what has been shown.
+- **Surprising capabilities.** New abilities, some of them dangerous, can appear as systems grow and be discovered only after release.
+- **Staleness.** Information may be out of date without the user knowing it.
+- **Security.** Model weights and training data can be stolen, leaked or tampered with.
+- **Silent change.** Updates alter behaviour without notice, and withdrawn models leave people who rely on them without warning.
+- **Hidden costs.** Training demands large amounts of energy, water and hardware, and of human labour.
+
+## Good practices
+
+- **Govern the data.** Keep an inventory of sources, with licences, consent and opt-outs recorded. Exclude abusive, stolen and private material, respect machine-readable rights reservations, honour deletion requests as far as is technically possible, and publish a summary of what was used. In the European Union, providers of general-purpose models are already required to publish such a summary and to maintain a copyright policy.
+- **Curate for quality and balance.** Remove duplicates, represent languages and cultures fairly, track how much synthetic data is used, guard against poisoning and avoid feeding a model its own output.
+- **Treat labour fairly.** Pay and protect annotators and moderators, be open about the instructions they follow and offer psychological support where content is harmful.
+- **Evaluate in layers.** Test capability, safety, bias and robustness in several languages, use fresh and held-out tests to avoid contamination, and add independent third-party evaluation and adversarial testing by experts. Test in realistic workflows with real users.
+- **Report failures, not only averages.** Publish results by group, list known weaknesses and record failure cases.
+- **Document openly.** Provide model and system cards, descriptions of the data, intended and prohibited uses, the date up to which knowledge extends, version history and a plain-language summary for the public.
+- **Teach and test honesty.** Train and evaluate systems to express calibrated uncertainty, to decline when they do not know, to cite sources, to resist flattery and to say when information may be out of date.
+- **Design for the limits.** Make it visible that content is AI-generated, show sources and uncertainty, require human verification in high-stakes settings and restrict use to areas where the system has been validated.
+- **Test dangerous capabilities before release.** Define thresholds that trigger stronger safeguards, staged access or a pause, secure model weights, report serious incidents to the authorities and protect staff who raise concerns.
+- **Monitor after release.** Provide channels for users to report harm and errors, re-evaluate regularly and be ready to roll back.
+- **Manage change.** Keep version numbers and change notes, give notice before altering or retiring a system that people depend on, and keep audit-grade records.
+- **As a user, test and check.** Read the documentation, check dates and sources, try the tool on questions to which you already know the answer and stay within its demonstrated limits.
+- **Communicate honestly.** Back marketing claims with evidence and avoid overstating what a system understands or feels.
+- **Support independent research.** Give researchers access to study interpretability, safety and societal effects.
+
+## Concrete example
+
+*A hypothetical case.* A company releases a general-purpose assistant.
+
+In the **wrong version**, it was trained on a mix of scraped material of unknown origin, including personal data and copied books. It scores highly on public benchmarks whose questions leaked into its data. There is no documentation. In practice it invents legal citations in a confident tone, and answers are noticeably worse and more biased in smaller languages. A silent update changes its behaviour overnight. When asked, the company says it cannot know what is in the data.
+
+In the **right version**, the sources are documented, a summary is published and opt-outs are honoured. Independent experts have tested it in several languages and the known weaknesses are listed, including its tendency to fabricate citations and the date of its knowledge. The system says when it is unsure and cites sources. Legal and medical uses carry clear warnings and a requirement for human verification. Dangerous capabilities were tested before release, incidents can be reported and every update comes with notes.
+
+## What must not be done
+
+- Training on data obtained by deception, theft or abuse, including sexual abuse material and private information, or ignoring opt-outs and rights reservations.
+- Hiding the sources, limits and risks of a system from the people who rely on it, in particular where it is used for high-stakes decisions.
+- Overstating abilities: claiming accuracy, safety, reasoning or expert-level performance without evidence, or presenting a system as a doctor, lawyer or other qualified professional.
+- Releasing a system without testing its dangerous capabilities, or ignoring what testers have found.
+- Manipulating evaluations by training on test questions or by reporting only favourable results.
+- Building systems that bluff, flatter, invent sources or hide that their answers may be out of date.
+- Using AI alone to decide matters of serious consequence beyond what it has been shown to handle.
+- Changing or withdrawing a system silently when people depend on it for essential tasks.
+- Leaving annotators and moderators without fair pay, protection and support.
+- Letting model weights or training data be exposed through negligence.
+- Retraining on AI-generated content without tracking it.
+- Dismissing evidence of harm on the grounds that the model is a black box.
+
+## How to remedy
+
+When a flaw in training, data or limits has caused or may cause harm:
+
+1. **Acknowledge and warn.** Tell users promptly what the flaw is, and update the documentation.
+2. **Limit use.** Restrict or suspend the affected functions or domains, add safeguards and require human review.
+3. **Investigate the cause.** Examine the data, the training objectives, the gaps in evaluation and the context of use.
+4. **Fix it.** Remove unlawful or harmful data, then retrain, fine-tune or filter. Where removing the influence of data from a trained model is not feasible, say so openly and use other means to reduce the harm.
+5. **Repair the consequences.** Review decisions that relied on faulty outputs, correct them and compensate those harmed, including rights holders and people whose data was used unlawfully.
+6. **Re-evaluate independently.** Include the failure case in the tests before restoring the service, and publish the results.
+7. **Report and share.** Notify the authorities of serious incidents and share the lessons with the wider community.
+8. **Improve the process.** Update data governance, evaluation and release criteria so that the same failure is caught earlier.
+
+**If you relied on a faulty output,** check the decisions you made on that basis, correct errors you passed on, inform those affected and report the problem to the provider.
+
+A trustworthy system is not the one that claims the most, but the one that shows its sources, its tests and its limits. Sometimes the most useful thing an AI can say is: "I am not sure."

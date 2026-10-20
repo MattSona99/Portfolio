@@ -321,3 +321,22 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .hero-game * { scroll-behavior: auto; }
 }
+
+/* --- GESTIONE MULTILINGUA GLOBALE --- */
+[data-lang] {
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+:root:not([lang="it"]) [data-lang="it"],
+:root[lang="it"] [data-lang="en"] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+:root[lang="it"] [data-lang="it"],
+:root:not([lang="it"]) [data-lang="en"] {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+}

@@ -1,6 +1,6 @@
-import { CONFIG, TILE } from './config';
-import { project } from './grid';
-import type { Course, Palette } from './types';
+import { CONFIG, TILE } from '../core/config';
+import { project } from '../core/grid';
+import type { Course, Palette } from '../core/types';
 
 // Guida verde tratteggiata che porta alla TILE BUCO.
 // Il cammino è squadrato e passa per il centro delle tile: le curve sono sempre

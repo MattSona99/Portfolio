@@ -1,6 +1,6 @@
 import { gsap } from 'gsap';
-import { CONFIG } from './config';
-import type { Course, GameState, HoleState, Point } from './types';
+import { CONFIG } from '../core/config';
+import type { Course, GameState, HoleState, Point } from '../core/types';
 
 // Le 4 direzioni isometriche in ordine di rotazione di 90°:
 // giù-destra (x+1), giù-sinistra (y+1), su-sinistra (x-1), su-destra (y-1).
@@ -118,7 +118,7 @@ export function canMove(state: GameState, next: Point): boolean {
 export function handleArrival(
   state: GameState,
   from: Point,
-  hooks: { onImpact?: () => void } = {},
+  hooks: { onImpact?: () => void; onComplete?: () => void } = {},
 ) {
   const { course, hole, position } = state;
   const path = course.path;
@@ -156,7 +156,9 @@ export function handleArrival(
       .timeline()
       .to(hole, { sink: 1, duration: 0.5, ease: 'power3.in' })
       .call(() => hooks.onImpact?.())
-      .to(hole, { fill: 1, duration: 0.9, ease: 'power1.inOut' }, '-=0.05');
+      .to(hole, { fill: 1, duration: 0.9, ease: 'power1.inOut' }, '-=0.05')
+      // Livello completato: parte il passaggio al livello 2 (vedi core/flow.ts).
+      .call(() => hooks.onComplete?.());
   }
 }
 
@@ -208,6 +210,8 @@ export function resetCourse(state: GameState) {
   hole.reveal = 0;
   hole.done = false;
 
-  // Se era nel buco, il cubo riemerge e perde il colore pieno.
-  gsap.to(hole, { sink: 0, fill: 0, duration: 0.6, ease: 'power2.out' });
+  // Se era nel buco, il cubo riemerge e perde il colore pieno. Se il piano era già 2D,
+  // aspetta che torni isometrico (stessa faccia piena: il passaggio non si vede).
+  const delay = state.flow.plane > 0 ? 1.0 : 0;
+  gsap.to(hole, { sink: 0, fill: 0, duration: 0.6, ease: 'power2.out', delay });
 }

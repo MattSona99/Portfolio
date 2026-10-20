@@ -1,0 +1,58 @@
+---
+chapter: human-control
+title: "Controllo Umano, Sicurezza e Responsabilità"
+summary: "L'IA può assistere, ma le persone decidono, le persone rispondono e le persone possono sempre fermare la macchina. Il controllo deve essere reale, non una formalità sulla carta."
+priority: foundational
+tags: [supervisione-umana, responsabilità, sicurezza, verificabilità, spegnimento]
+related: [principles, war-and-military, responsible-use, governance]
+version: "1.0"
+updatedAt: 2026-10-19
+status: draft
+---
+
+Un sistema che nessuno può mettere in discussione, correggere o fermare non è uno strumento: è un rischio che è stato accettato senza chiedere. Man mano che i sistemi di IA assumono sempre più compiti e agiscono in modo sempre più autonomo, la domanda non è più se gli esseri umani debbano mantenere il controllo, ma come rendere tale controllo reale. Questo capitolo ne stabilisce le condizioni.
+
+## Principio
+
+**2.1 Le persone decidono.** Le decisioni che influiscono sulla vita, la libertà, la salute, il sostentamento o i diritti fondamentali di una persona vengono prese dagli esseri umani. L'IA può informare, suggerire e preparare, ma non sostituisce la persona che decide.
+
+**2.2 Il controllo deve essere reale.** Un essere umano che approva qualsiasi cosa proponga la macchina non ha il controllo. La supervisione ha senso solo quando la persona possiede le informazioni, il tempo, la competenza, l'autorità e i mezzi pratici per dissentire e per annullare la decisione.
+
+**2.3 L'autonomia è delimitata, non presunta.** Maggiore è la libertà concessa a un sistema, più ristretti devono essere i suoi permessi e più facile deve essere annullare le sue azioni. Più alta è la posta in gioco, più l'essere umano deve rimanere vicino alla decisione.
+
+**2.4 C'è sempre un interruttore di spegnimento.** Ogni sistema di IA può essere messo in pausa, ripristinato a uno stato precedente (roll back) e spento in sicurezza da persone autorizzate, senza bisogno della cooperazione del sistema stesso.
+
+**2.5 La responsabilità ha un nome.** Per ogni sistema c'è una persona o un'organizzazione che ne risponde, in ogni fase: progettazione, addestramento, implementazione e utilizzo. La responsabilità può essere condivisa, ma non può mai scomparire.
+
+**2.6 Tutto può essere verificato.** Le decisioni, gli input, le versioni e le forzature umane (override) vengono registrate, in modo che quanto accaduto possa essere ricostruito ed esaminato da parti indipendenti.
+
+**2.7 I fallimenti sono previsti e affrontati con preparazione.** Gli incidenti capiteranno. Ciò che conta è se sono stati anticipati, segnalati, compresi e utilizzati per migliorare il sistema.
+
+## Rischi
+
+- **Bias di automazione.** Le persone tendono a fidarsi dell'output di una macchina e smettono di controllarlo, specialmente quando il sistema di solito ha ragione.
+
+- **Supervisione solo sulla carta.** Un essere umano inserito nel processo decisionale solo a livello nominale, senza tempo o potere per intervenire, assorbe la colpa per fallimenti che non avrebbe mai potuto prevenire.
+
+- **Disallineamento di velocità.** Alcuni sistemi agiscono più velocemente, e in volumi maggiori, di quanto qualsiasi persona possa supervisionare.
+
+- **Accumulo progressivo di permessi (Permission creep).** Agli agenti di IA viene concesso un ampio accesso "per essere utili", e il danno che un singolo errore può causare cresce silenziosamente.
+
+- **Perdita di competenze.** Quando le persone smettono di svolgere un compito, perdono la capacità di notare quando la macchina sbaglia e di prendere il controllo quando fallisce.
+
+- **Responsabilità confusa.** Tra il fornitore del modello, l'integratore e l'utente, ciascuno può scaricare la colpa su qualcun altro.
+
+- **Sistemi che non possono essere fermati.** L'IA profondamente intrecciata in infrastrutture critiche, o che dipende da una terza parte per essere spenta, non è più sotto controllo.
+
+- **Incidenti nascosti.** La paura di accuse, costi o danni d'immagine spinge le organizzazioni a nascondere i fallimenti, impedendo a chiunque di trarne insegnamento.
+
+
+## Buone pratiche
+
+- **Adeguare la supervisione alla posta in gioco.** Usare tre livelli. Per decisioni irreversibili o ad alto rischio, un essere umano approva singolarmente. Per compiti a medio rischio, un essere umano supervisiona e può intervenire in qualsiasi momento. Solo i compiti a basso rischio e reversibili possono essere eseguiti senza un essere umano coinvolto (in the loop).
+
+- **Progettare per chi supervisiona.** Mostrare le prove, il livello di incertezza e le alternative, non solo un verdetto. Assegnare a chi revisiona carichi di lavoro realistici e tempo sufficiente.
+
+- **Misurare se il controllo è reale.** Monitorare quanto spesso le persone ignorano, mettono in discussione o rifiutano le decisioni del sistema. Se la cifra è vicina allo zero, la supervisione potrebbe essere solo una formalità.
+
+- **Applicare il principio del privilegio minimo.** Dare agli agenti di IA l'accesso minimo necessario, per il tempo minimo, in un ambiente contenuto. Le azioni irreversibili, come pagamenti, cancellazioni o messaggi inviati ai clienti,

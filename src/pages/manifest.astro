@@ -2,17 +2,655 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Box from "../components/ui/Box.astro";
 import Footer from "../components/home/Footer.astro";
+import SubHeading from "../components/layout/Subheading.astro";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import { manifestUi } from "../i18n/manifest.ui";
+import { CHAPTERS, LOCALES, DEFAULT_LOCALE, type Locale } from "../contents/manifest.config";
+
+// ---------------------------------------------------------------------------
+// Data
+// ---------------------------------------------------------------------------
+type Rendered = Awaited<ReturnType<typeof render>>;
+type LangView = {
+  entry: CollectionEntry<"manifest">;
+  Content: Rendered["Content"];
+  fallback: boolean; // true when this language has no translation yet
+};
+
+const all = await getCollection("manifest");
+const byLang = (l: Locale) =>
+  new Map(all.filter((e) => e.id.startsWith(`${l}/`)).map((e) => [e.data.chapter, e] as const));
+const maps = Object.fromEntries(LOCALES.map((l) => [l, byLang(l)])) as Record<
+  Locale,
+  ReturnType<typeof byLang>
+>;
+
+// A chapter exists once its default-language (English) file exists.
+// Numbers follow the canonical order in CHAPTERS, so "Chapter 05" is always the same chapter.
+const chapters = (
+  await Promise.all(
+    CHAPTERS.map(async (key, i) => {
+      const base = maps[DEFAULT_LOCALE].get(key);
+      if (!base) return null;
+      const views = {} as Record<Locale, LangView>;
+      for (const l of LOCALES) {
+        const entry = maps[l].get(key) ?? base;
+        const { Content } = await render(entry);
+        views[l] = { entry, Content, fallback: !maps[l].has(key) };
+      }
+      return { key, number: String(i + 1).padStart(2, "0"), views };
+    }),
+  )
+).filter((c): c is NonNullable<typeof c> => c !== null);
+
+type Chapter = (typeof chapters)[number];
+const byKey = new Map(chapters.map((c) => [c.key as string, c]));
+
+const axioms = (await getCollection("axioms")).sort((a, b) => a.data.order - b.data.order);
+
+const fmt = (d: Date, l: Locale) =>
+  d.toLocaleDateString(l === "it" ? "it-IT" : "en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+
+const lastUpdated = new Date(
+  Math.max(...chapters.map((c) => c.views[DEFAULT_LOCALE].entry.data.updatedAt.getTime())),
+);
+
+// Only links to chapters that already exist on the page
+const relatedOf = (c: Chapter, lang: Locale) =>
+  c.views[lang].entry.data.related.flatMap((k) => {
+    const r = byKey.get(k);
+    return r ? [{ key: k as string, number: r.number, title: r.views[lang].entry.data.title }] : [];
+  });
+
+// Index: the axioms first, then the chapters
+const tocItems = [
+  { key: "axioms", number: "00", title: (l: Locale) => manifestUi[l].axioms },
+  ...chapters.map((c) => ({
+    key: c.key as string,
+    number: c.number,
+    title: (l: Locale) => c.views[l].entry.data.title,
+  })),
+];
+
+const firstChapterKey = chapters[0]?.key ?? "axioms";
 ---
 
 <BaseLayout>
-  <Box
-    as="section"
-    data-hero
-    aria-label="Hero"
-    class="-mt-2px relative h-[calc(100svh-var(--header-h))] w-full overflow-hidden"
-  >
-    <h1>Pagina Manifest</h1>
-  </Box> <!-- AGGIUNTA LA CHIUSURA DEL BOX QUI -->
+  <div data-manifest>
+    {/* --- INDEX RAIL: fixed, vertically centred on the left --- */}
+    <nav data-toc class="mf-toc" aria-labelledby="mf-toc-title">
+      <button
+        type="button"
+        data-toc-toggle
+        class="mf-toc__toggle"
+        aria-expanded="false"
+        aria-controls="mf-toc-panel"
+      >
+        <span class="mf-toc__rail" aria-hidden="true"></span>
+        <span class="sr-only">
+          {LOCALES.map((lang) => (
+            <span data-lang={lang} lang={lang}>{manifestUi[lang].toggleIndex}</span>
+          ))}
+        </span>
+        {tocItems.map((item) => <span class="mf-tick" data-tick={item.key} aria-hidden="true" />)}
+      </button>
+
+      <div id="mf-toc-panel" class="mf-toc__panel">
+        <div class="mf-toc__panel-inner" data-toc-scroll>
+          <div class="mb-4 flex items-baseline justify-between font-mono text-[.72rem] uppercase tracking-[.12em]">
+            <p id="mf-toc-title">
+              {LOCALES.map((lang) => (
+                <span data-lang={lang} lang={lang}>{manifestUi[lang].index}</span>
+              ))}
+            </p>
+            <span class="opacity-60"><span data-toc-percent>0</span>%</span>
+          </div>
+
+          <ol>
+            {tocItems.map((item) => (
+              <li>
+                <a href={`#${item.key}`} data-toc-link={item.key} class="mf-toc__link">
+                  <span class="font-mono text-[.68rem] tracking-[.12em]">{item.number}</span>
+                  <span>
+                    {LOCALES.map((lang) => (
+                      <span data-lang={lang} lang={lang}>{item.title(lang)}</span>
+                    ))}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ol>
+
+          <button
+            type="button"
+            data-toc-top
+            class="mt-5 font-mono text-[.72rem] uppercase tracking-[.12em] opacity-60 transition-opacity hover:opacity-100"
+          >
+            ↑
+            {LOCALES.map((lang) => (
+              <span data-lang={lang} lang={lang}>{manifestUi[lang].top}</span>
+            ))}
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    {/* --- HERO --- */}
+    <Box
+      as="section"
+      data-hero
+      aria-label="Hero"
+      class="-mt-2px relative h-[calc(100svh-var(--header-h))] w-full overflow-hidden"
+    >
+      <div data-hero-content class="grid h-full w-full grid-cols-1 grid-rows-1">
+        {
+          LOCALES.map((lang) => {
+            const t = manifestUi[lang];
+            return (
+              <div
+                data-lang={lang}
+                lang={lang}
+                class="col-start-1 row-start-1 flex h-full w-full flex-col justify-between p-6 md:p-12"
+              >
+                <div class="flex items-center gap-3 font-mono text-[.72rem] uppercase tracking-[.12em]">
+                  <span class="inline-block size-2 bg-manifest" aria-hidden="true" />
+                  <span>{t.kicker}</span>
+                </div>
+
+                <div>
+                  <h1
+                    data-split
+                    data-intro
+                    class="font-bespoke text-[clamp(2.75rem,12vw,10rem)] font-extrabold uppercase leading-[.9]"
+                  >
+                    {t.title}
+                  </h1>
+                  <p
+                    data-split
+                    data-intro
+                    class="mt-6 max-w-2xl font-mono text-xs uppercase leading-relaxed tracking-[.12em] opacity-75 md:text-sm"
+                  >
+                    {t.lede}
+                  </p>
+                </div>
+
+                <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                  <ul class="flex flex-wrap gap-3">
+                    <li>
+                      <a
+                        href="#axioms"
+                        class="sheen sheen-contrast box-sm inline-block px-4 py-3 font-mono text-[.72rem] uppercase tracking-[.12em]"
+                      >
+                        {t.readPillars}
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href={`#${firstChapterKey}`}
+                        class="sheen sheen-contrast box-sm inline-block px-4 py-3 font-mono text-[.72rem] uppercase tracking-[.12em]"
+                      >
+                        {t.readChapters}
+                      </a>
+                    </li>
+                  </ul>
+                  <p class="font-mono text-[.72rem] uppercase tracking-[.12em] opacity-60 md:text-right">
+                    {t.chaptersLabel} {chapters.length}/{CHAPTERS.length} · {t.updatedLabel}{" "}
+                    {fmt(lastUpdated, lang)}
+                    <span class="mt-1 block">{t.scroll}</span>
+                  </p>
+                </div>
+              </div>
+            );
+          })
+        }
+      </div>
+    </Box>
+
+    {/* --- THE TEN PILLARS --- */}
+    <Box as="section" class="-mt-px relative w-full">
+      <div
+        id="axioms"
+        data-spy="axioms"
+        class="grid scroll-mt-[var(--header-h)] gap-8 p-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2.2fr)] md:gap-0 md:p-12"
+      >
+        <div class="self-start md:sticky md:top-[calc(var(--header-h)+2rem)] md:pr-10">
+          {
+            LOCALES.map((lang) => {
+              const t = manifestUi[lang];
+              return (
+                <div data-lang={lang} lang={lang}>
+                  <a
+                    href="#axioms"
+                    class="font-mono text-[.72rem] uppercase tracking-[.12em] text-manifest hover:underline"
+                  >
+                    00
+                  </a>
+                  <h2
+                    data-split
+                    class="mt-3 font-bespoke text-3xl font-bold uppercase leading-none md:text-4xl"
+                  >
+                    {t.axioms}
+                  </h2>
+                  <p class="mt-5 max-w-xs font-mono text-[.72rem] uppercase leading-relaxed tracking-[.12em] opacity-60">
+                    {t.axiomsLede}
+                  </p>
+                </div>
+              );
+            })
+          }
+        </div>
+
+        <div class="md:border-l md:border-line md:pl-12 lg:pl-16">
+          {
+            LOCALES.map((lang) => (
+              <div data-lang={lang} lang={lang}>
+                {axioms.map((a, i) => (
+                  <>
+                    {i > 0 && (
+                      <div data-line class="h-px w-full origin-left bg-line" aria-hidden="true" />
+                    )}
+                    <article
+                      data-reveal
+                      class="grid gap-x-8 gap-y-2 py-6 md:grid-cols-[3rem_minmax(0,1fr)]"
+                    >
+                      <span class="font-mono text-[.72rem] uppercase tracking-[.12em] text-manifest md:pt-2">
+                        {String(a.data.order).padStart(2, "0")}
+                      </span>
+                      <div>
+                        <h3 class="font-bespoke text-2xl font-bold uppercase leading-tight md:text-3xl">
+                          {a.data.title[lang] ?? a.data.title.en}
+                        </h3>
+                        <p data-fade class="mt-3 max-w-3xl text-xl leading-snug md:text-2xl">
+                          {a.data.text[lang] ?? a.data.text.en}
+                        </p>
+                      </div>
+                    </article>
+                  </>
+                ))}
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </Box>
+
+    {/* --- CHAPTERS (the manifest itself) --- */}
+    {
+      chapters.map((c) => (
+        <Box as="section" class="-mt-px relative w-full">
+          <div
+            id={c.key}
+            data-spy={c.key}
+            class="grid scroll-mt-[var(--header-h)] gap-8 p-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2.2fr)] md:gap-0 md:p-12"
+          >
+            {/* Sticky chapter label, title and metadata */}
+            <div class="self-start md:sticky md:top-[calc(var(--header-h)+2rem)] md:pr-10">
+              {LOCALES.map((lang) => {
+                const t = manifestUi[lang];
+                const v = c.views[lang];
+                const d = v.entry.data;
+                return (
+                  <div data-lang={lang} lang={v.fallback ? DEFAULT_LOCALE : lang}>
+                    <a
+                      href={`#${c.key}`}
+                      class="font-mono text-[.72rem] uppercase tracking-[.12em] text-manifest hover:underline"
+                    >
+                      {t.chapter} {c.number}
+                    </a>
+                    <h2
+                      data-split
+                      class="mt-3 font-bespoke text-3xl font-bold uppercase leading-none md:text-4xl"
+                    >
+                      {d.title}
+                    </h2>
+                    <p class="mt-5 font-mono text-[.72rem] uppercase leading-relaxed tracking-[.12em] opacity-60">
+                      v{d.version} · {fmt(d.updatedAt, lang)} · {t.status[d.status]}
+                    </p>
+                    {d.tags.length > 0 && (
+                      <ul class="mt-4 flex flex-wrap gap-2">
+                        {d.tags.map((tag) => (
+                          <li class="box-sm px-2 py-1 font-mono text-[.62rem] uppercase tracking-[.12em] opacity-70">
+                            {tag}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Summary + MDX body */}
+            <div class="min-w-0 md:border-l md:border-line md:pl-12 lg:pl-16">
+              {LOCALES.map((lang) => {
+                const t = manifestUi[lang];
+                const v = c.views[lang];
+                const { Content } = v;
+                const related = relatedOf(c, lang);
+                return (
+                  <div data-lang={lang} lang={v.fallback ? DEFAULT_LOCALE : lang}>
+                    {v.fallback && (
+                      <p class="mb-6 font-mono text-[.72rem] uppercase tracking-[.12em] text-manifest">
+                        {t.fallbackNote}
+                      </p>
+                    )}
+                    <p data-fade class="max-w-3xl text-2xl leading-snug md:text-3xl">
+                      {v.entry.data.summary}
+                    </p>
+
+                    <div class="manifest-prose mt-12 max-w-3xl">
+                      <Content components={{ h2: SubHeading }} />
+                    </div>
+
+                    {related.length > 0 && (
+                      <div data-reveal class="mt-14 border-t border-line pt-6">
+                        <p class="font-mono text-[.72rem] uppercase tracking-[.12em] opacity-60">
+                          {t.related}
+                        </p>
+                        <ul class="mt-4 flex flex-wrap gap-3">
+                          {related.map((r) => (
+                            <li>
+                              <a
+                                href={`#${r.key}`}
+                                class="sheen sheen-contrast box-sm inline-block px-4 py-3 font-mono text-[.72rem] uppercase tracking-[.12em]"
+                              >
+                                {r.number} · {r.title}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Box>
+      ))
+    }
+  </div>
 
   <Footer />
 </BaseLayout>
+
+<script>
+  import { initManifest } from "../scripts/manifest";
+
+  let current: Element | null = null;
+  let cleanup: (() => void) | null = null;
+
+  const boot = () => {
+    const root = document.querySelector("[data-manifest]");
+    if (!root || root === current) return;
+    cleanup?.();
+    current = root;
+    cleanup = initManifest();
+  };
+
+  boot();
+  document.addEventListener("astro:page-load", boot);
+  document.addEventListener("astro:before-swap", () => {
+    cleanup?.();
+    cleanup = null;
+    current = null;
+  });
+</script>
+
+<style is:global>
+  /* ---- Initial state until the script sets data-ready (CSS fallback after 2.5s) ---- */
+  [data-manifest]:not([data-ready]) :is([data-reveal], [data-split], [data-fade], .manifest-prose > *) {
+    opacity: 0;
+    animation: mf-show 0s linear 2.5s forwards;
+  }
+  [data-manifest]:not([data-ready]) [data-line] {
+    transform: scaleX(0);
+    animation: mf-show-line 0s linear 2.5s forwards;
+  }
+  @keyframes mf-show {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes mf-show-line {
+    to {
+      transform: none;
+    }
+  }
+
+  /* ---- Language switch: long texts differ in length, so the inactive language
+          is removed from the layout (no empty gaps), instead of just being hidden ---- */
+  :root:not([lang="it"]) [data-manifest] [data-lang="it"],
+  :root[lang="it"] [data-manifest] [data-lang="en"] {
+    display: none !important;
+  }
+
+  /* ---- Prose: styles for the MDX body ---- */
+  .manifest-prose {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .manifest-prose > * + * {
+    margin-top: 1.25rem;
+  }
+  .manifest-prose h3 {
+    margin-top: 3.5rem;
+    font-family: var(--font-bespoke, "Bespoke", sans-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+  .manifest-prose h3 + * {
+    margin-top: 1.25rem;
+  }
+  .manifest-prose strong {
+    font-weight: 700;
+  }
+  .manifest-prose em {
+    opacity: 0.75;
+  }
+  .manifest-prose a {
+    text-decoration: underline;
+    text-decoration-color: var(--manifest);
+    text-underline-offset: 0.25em;
+    transition: color 0.2s ease;
+  }
+  .manifest-prose a:hover {
+    color: var(--manifest);
+  }
+  .manifest-prose ul,
+  .manifest-prose ol {
+    list-style: none;
+    padding: 0;
+  }
+  .manifest-prose li {
+    position: relative;
+    padding-left: 2rem;
+  }
+  .manifest-prose li + li {
+    margin-top: 0.7rem;
+  }
+  .manifest-prose ul > li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--manifest);
+  }
+  .manifest-prose ol {
+    counter-reset: mf-ol;
+  }
+  .manifest-prose ol > li {
+    counter-increment: mf-ol;
+  }
+  .manifest-prose ol > li::before {
+    content: counter(mf-ol, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 0.2em;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--manifest);
+  }
+  .manifest-prose blockquote {
+    border-left: 1px solid var(--manifest);
+    padding-left: 1.25rem;
+    opacity: 0.85;
+  }
+  .manifest-prose code {
+    border: 1px solid var(--line);
+    padding: 0.1em 0.35em;
+    font-family: ui-monospace, monospace;
+    font-size: 0.9em;
+  }
+  .manifest-prose pre {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    padding: 1rem;
+  }
+  .manifest-prose hr {
+    border-color: var(--line);
+  }
+
+  /* ---- Index rail ---- */
+  .mf-toc {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    z-index: 40;
+    display: flex;
+    max-height: 80svh;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-left: 0;
+    /* hidden until the reader reaches the content */
+    transform: translate(-100%, -50%);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
+      opacity 0.4s ease;
+  }
+  [data-manifest][data-toc-visible] .mf-toc {
+    transform: translate(0, -50%);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mf-toc__toggle {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 8px;
+    width: 1.5rem;
+    padding: 1rem 0;
+    cursor: pointer;
+  }
+  .mf-toc__toggle:focus-visible,
+  .mf-toc__link:focus-visible,
+  [data-toc-top]:focus-visible {
+    outline: 1px solid var(--manifest);
+    outline-offset: 2px;
+  }
+
+  /* reading progress: thin line on the left edge of the rail */
+  .mf-toc__rail {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 1px;
+    background: var(--line);
+  }
+  .mf-toc__rail::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--manifest);
+    transform-origin: top;
+    transform: scaleY(var(--p, 0));
+  }
+
+  .mf-tick {
+    display: block;
+    height: 2px;
+    width: 0.5rem;
+    margin-left: 0.5rem;
+    background: var(--mark);
+    transition:
+      width 0.25s ease,
+      background 0.25s ease;
+  }
+  .mf-tick[data-active] {
+    width: 0.9rem;
+    background: var(--manifest);
+  }
+
+  .mf-toc__panel {
+    width: 0;
+    overflow: hidden;
+    visibility: hidden; /* closed panel: links are skipped by Tab */
+    transition:
+      width 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+      visibility 0s linear 0.35s;
+  }
+  .mf-toc[data-open] .mf-toc__panel {
+    width: min(21rem, 78vw);
+    visibility: visible;
+    transition-delay: 0s;
+  }
+  .mf-toc__panel-inner {
+    position: relative; /* offsetParent for the auto-scroll to the active item */
+    width: min(21rem, 78vw);
+    max-height: 80svh;
+    overflow-y: auto;
+    padding: 1.25rem;
+    border-left: 1px solid var(--line);
+  }
+
+  .mf-toc__link {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.95rem;
+    line-height: 1.25;
+    opacity: 0.6;
+    transition:
+      opacity 0.2s ease,
+      color 0.2s ease;
+  }
+  .mf-toc__link:hover,
+  .mf-toc__link:focus-visible {
+    opacity: 1;
+  }
+  .mf-toc__link[data-active] {
+    opacity: 1;
+    color: var(--manifest);
+  }
+
+  @media (min-width: 48rem) {
+    .mf-toc__toggle {
+      width: 2.25rem;
+    }
+    .mf-tick {
+      margin-left: 0.75rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mf-toc,
+    .mf-toc__panel,
+    .mf-tick {
+      transition: none;
+    }
+  }
+</style>
