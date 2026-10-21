@@ -4,19 +4,19 @@
 <div
   id="site-loader"
   aria-hidden="true"
-  class="fixed inset-0 z-[9999] grid place-items-center overflow-hidden pointer-events-auto select-none"
-  style="background-color: transparent; color: #F2F1EE;"
+  class="fixed inset-0 z-[9999] grid place-items-center overflow-hidden pointer-events-auto select-none text-fg"
+  style="background-color: transparent;"
 >
   {/* --- SFONDO A 3 PERSIANE VERTICALI --- */}
   <div class="loader-shutters absolute inset-0 grid grid-cols-3 pointer-events-none">
-    <div class="loader-shutter h-full w-[calc(100%+2px)] border-r border-[#333436] bg-[#121416] will-change-transform origin-top"></div>
-    <div class="loader-shutter h-full w-[calc(100%+2px)] border-r border-[#333436] bg-[#121416] will-change-transform origin-top"></div>
-    <div class="loader-shutter h-full w-full bg-[#121416] will-change-transform origin-top"></div>
+    <div class="loader-shutter h-full w-[calc(100%+2px)] border-r border-line bg-bg will-change-transform origin-top"></div>
+    <div class="loader-shutter h-full w-[calc(100%+2px)] border-r border-line bg-bg will-change-transform origin-top"></div>
+    <div class="loader-shutter h-full w-full bg-bg will-change-transform origin-top"></div>
   </div>
 
   {/* --- CENTER BOX --- */}
   <div class="loader-center relative z-10 w-[min(90vw,460px)]">
-    <div class="box relative bg-[#121416]/90 backdrop-blur-xs p-8 md:p-12 border border-[#333436]">
+    <div class="box relative bg-bg/90 backdrop-blur-xs p-8 md:p-12 border border-line">
       <span class="mark mark-tl"></span>
       <span class="mark mark-tr"></span>
       <span class="mark mark-bl"></span>
@@ -25,15 +25,17 @@
       <div class="flex flex-col gap-6">
         <div class="overflow-hidden py-1">
           <div class="loader-counter-wrap flex items-baseline justify-between font-bespoke font-extrabold leading-none tracking-tight">
-            <span class="loader-counter text-6xl md:text-8xl tabular-nums text-[#F2F1EE]">000</span>
-            <span class="text-2xl md:text-4xl text-[#55565a]">%</span>
+            <span class="loader-counter text-6xl md:text-8xl tabular-nums text-fg">000</span>
+            <span class="text-2xl md:text-4xl text-mark">%</span>
           </div>
         </div>
 
-        <div class="relative h-[3px] w-full overflow-hidden bg-[#333436]">
+        {/* Sostituito bg-[#333436] con bg-line */}
+        <div class="relative h-[3px] w-full overflow-hidden bg-line">
+          {/* Gradiente dinamico basato sulle variabili dei tuoi 3 progetti principali */}
           <div
             class="loader-bar h-full w-full origin-left scale-x-0 will-change-transform"
-            style="background: linear-gradient(90deg, #b7efc5 0%, #6ede8a 50%, #25a244 100%);"
+            style="background: linear-gradient(90deg, var(--github) 0%, var(--curriculum) 50%, var(--manifest) 100%);"
           ></div>
         </div>
       </div>

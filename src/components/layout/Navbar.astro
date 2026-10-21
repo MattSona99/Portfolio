@@ -2,6 +2,16 @@
 import Box from "../ui/Box.astro";
 import ThemeToggle from "../ui/ThemeToggle.astro";
 import LangToggle from "../ui/LangToggle.astro";
+
+// Determina il colore iniziale lato server
+const { pathname } = Astro.url;
+
+let sColor = "var(--home, #25a244)";
+if (pathname.startsWith("/curriculum")) {
+  sColor = "var(--curriculum)";
+} else if (pathname.startsWith("/manifest")) {
+  sColor = "var(--manifest)";
+}
 ---
 
 <header transition:persist="navbar" data-site-navbar class="sticky top-0 z-50 bg-bg">
@@ -30,7 +40,7 @@ import LangToggle from "../ui/LangToggle.astro";
         href="/home"
         class="flex justify-center font-bespoke text-2xl font-extrabold tracking-[0.2em] md:text-4xl"
       >
-        M<span style="color: #25a244;">S</span>
+        M<span data-logo-s style={`color: ${sColor}; transition: color 0.3s ease;`}>S</span>
       </a>
 
       <!-- SLOTS DESTRA: Toggles -->
@@ -41,6 +51,26 @@ import LangToggle from "../ui/LangToggle.astro";
     </Box>
   </div>
 </header>
+
+<script>
+  function updateSColor() {
+    const sElement = document.querySelector<HTMLElement>('[data-logo-s]');
+    if (!sElement) return;
+
+    const path = window.location.pathname;
+
+    if (path.startsWith('/curriculum')) {
+      sElement.style.color = 'var(--curriculum)';
+    } else if (path.startsWith('/manifest')) {
+      sElement.style.color = 'var(--manifest)';
+    } else {
+      sElement.style.color = 'var(--home, #25a244)';
+    }
+  }
+
+  // Si attiva ad ogni cambio di pagina con View Transitions
+  document.addEventListener('astro:page-load', updateSColor);
+</script>
 
 <style>
   .nav-shell {

@@ -103,9 +103,9 @@ const firstChapterKey = chapters[0]?.key ?? "axioms";
       <div id="mf-toc-panel" class="mf-toc__panel">
         <div class="mf-toc__panel-inner" data-toc-scroll>
           <div class="mb-4 flex items-baseline justify-between font-mono text-[.72rem] uppercase tracking-[.12em]">
-            <p id="mf-toc-title">
+            <p id="mf-toc-title" class="grid grid-cols-1 grid-rows-1">
               {LOCALES.map((lang) => (
-                <span data-lang={lang} lang={lang}>{manifestUi[lang].index}</span>
+                <span data-lang={lang} lang={lang} class="col-start-1 row-start-1">{manifestUi[lang].index}</span>
               ))}
             </p>
             <span class="opacity-60"><span data-toc-percent>0</span>%</span>
@@ -116,9 +116,9 @@ const firstChapterKey = chapters[0]?.key ?? "axioms";
               <li>
                 <a href={`#${item.key}`} data-toc-link={item.key} class="mf-toc__link">
                   <span class="font-mono text-[.68rem] tracking-[.12em]">{item.number}</span>
-                  <span>
+                  <span class="grid grid-cols-1 grid-rows-1">
                     {LOCALES.map((lang) => (
-                      <span data-lang={lang} lang={lang}>{item.title(lang)}</span>
+                      <span data-lang={lang} lang={lang} class="col-start-1 row-start-1">{item.title(lang)}</span>
                     ))}
                   </span>
                 </a>
@@ -129,12 +129,14 @@ const firstChapterKey = chapters[0]?.key ?? "axioms";
           <button
             type="button"
             data-toc-top
-            class="mt-5 font-mono text-[.72rem] uppercase tracking-[.12em] opacity-60 transition-opacity hover:opacity-100"
+            class="mt-5 font-mono text-[.72rem] uppercase tracking-[.12em] opacity-60 transition-opacity hover:opacity-100 flex items-center gap-1"
           >
-            ↑
-            {LOCALES.map((lang) => (
-              <span data-lang={lang} lang={lang}>{manifestUi[lang].top}</span>
-            ))}
+            <span>↑</span>
+            <span class="grid grid-cols-1 grid-rows-1 text-left">
+              {LOCALES.map((lang) => (
+                <span data-lang={lang} lang={lang} class="col-start-1 row-start-1">{manifestUi[lang].top}</span>
+              ))}
+            </span>
           </button>
         </div>
       </div>
@@ -218,12 +220,12 @@ const firstChapterKey = chapters[0]?.key ?? "axioms";
         data-spy="axioms"
         class="grid scroll-mt-[var(--header-h)] gap-8 p-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2.2fr)] md:gap-0 md:p-12"
       >
-        <div class="self-start md:sticky md:top-[calc(var(--header-h)+2rem)] md:pr-10">
+        <div class="self-start md:sticky md:top-[calc(var(--header-h)+2rem)] md:pr-10 grid grid-cols-1 grid-rows-1">
           {
             LOCALES.map((lang) => {
               const t = manifestUi[lang];
               return (
-                <div data-lang={lang} lang={lang}>
+                <div data-lang={lang} lang={lang} class="col-start-1 row-start-1">
                   <a
                     href="#axioms"
                     class="font-mono text-[.72rem] uppercase tracking-[.12em] text-manifest hover:underline"
@@ -245,10 +247,10 @@ const firstChapterKey = chapters[0]?.key ?? "axioms";
           }
         </div>
 
-        <div class="md:border-l md:border-line md:pl-12 lg:pl-16">
+        <div class="md:border-l md:border-line md:pl-12 lg:pl-16 grid grid-cols-1 grid-rows-1">
           {
             LOCALES.map((lang) => (
-              <div data-lang={lang} lang={lang}>
+              <div data-lang={lang} lang={lang} class="col-start-1 row-start-1 w-full">
                 {axioms.map((a, i) => (
                   <>
                     {i > 0 && (
@@ -289,13 +291,13 @@ const firstChapterKey = chapters[0]?.key ?? "axioms";
             class="grid scroll-mt-[var(--header-h)] gap-8 p-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2.2fr)] md:gap-0 md:p-12"
           >
             {/* Sticky chapter label, title and metadata */}
-            <div class="self-start md:sticky md:top-[calc(var(--header-h)+2rem)] md:pr-10">
+            <div class="self-start md:sticky md:top-[calc(var(--header-h)+2rem)] md:pr-10 grid grid-cols-1 grid-rows-1">
               {LOCALES.map((lang) => {
                 const t = manifestUi[lang];
                 const v = c.views[lang];
                 const d = v.entry.data;
                 return (
-                  <div data-lang={lang} lang={v.fallback ? DEFAULT_LOCALE : lang}>
+                  <div data-lang={lang} lang={v.fallback ? DEFAULT_LOCALE : lang} class="col-start-1 row-start-1">
                     <a
                       href={`#${c.key}`}
                       class="font-mono text-[.72rem] uppercase tracking-[.12em] text-manifest hover:underline"
@@ -326,14 +328,14 @@ const firstChapterKey = chapters[0]?.key ?? "axioms";
             </div>
 
             {/* Summary + MDX body */}
-            <div class="min-w-0 md:border-l md:border-line md:pl-12 lg:pl-16">
+            <div class="min-w-0 md:border-l md:border-line md:pl-12 lg:pl-16 grid grid-cols-1 grid-rows-1">
               {LOCALES.map((lang) => {
                 const t = manifestUi[lang];
                 const v = c.views[lang];
                 const { Content } = v;
                 const related = relatedOf(c, lang);
                 return (
-                  <div data-lang={lang} lang={v.fallback ? DEFAULT_LOCALE : lang}>
+                  <div data-lang={lang} lang={v.fallback ? DEFAULT_LOCALE : lang} class="col-start-1 row-start-1 w-full">
                     {v.fallback && (
                       <p class="mb-6 font-mono text-[.72rem] uppercase tracking-[.12em] text-manifest">
                         {t.fallbackNote}
@@ -423,11 +425,23 @@ const firstChapterKey = chapters[0]?.key ?? "axioms";
     }
   }
 
-  /* ---- Language switch: long texts differ in length, so the inactive language
-          is removed from the layout (no empty gaps), instead of just being hidden ---- */
+  /* ---- Language switch: CSS Grid Stacking to prevent layout shifts ---- */
+  [data-manifest] [data-lang] {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
   :root:not([lang="it"]) [data-manifest] [data-lang="it"],
   :root[lang="it"] [data-manifest] [data-lang="en"] {
-    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
+
+  :root[lang="it"] [data-manifest] [data-lang="it"],
+  :root:not([lang="it"]) [data-manifest] [data-lang="en"] {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
   }
 
   /* ---- Prose: styles for the MDX body ---- */

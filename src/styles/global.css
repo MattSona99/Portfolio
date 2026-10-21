@@ -4,7 +4,7 @@
 @custom-variant light (&:where([data-theme=light], [data-theme=light] *));
 
 :root {
-  --bg: #121416;
+  --bg: #1F1E1D;
   --fg: #F2F1EE;
   --line: #333436;
   --mark: #55565a;
@@ -12,6 +12,7 @@
   --shade-b: #4b4c4f;
   --contrast-a: #cecdcb;
   --contrast-b: #a9a8a5;
+  --home: #25a244;
   --github: #2563eb;
   --curriculum: #facc15;
   --manifest: #dc2626;
@@ -20,19 +21,20 @@
 
 :root[data-theme="light"] {
   --bg: #F2F1EE;
-  --fg: #121416;
+  --fg: #1F1E1D;
   --line: #a9a8a5;
   --mark: #8c8b88;
   --shade-a: #a9a8a5;
   --shade-b: #8c8b88;
   --contrast-a: #333436;
-  --contrast-b: #121416;
+  --contrast-b: #1F1E1D;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-fg: var(--fg);
   --color-line: var(--line);
+  --color-home: var(--home);
   --color-github: var(--github);
   --color-curriculum: var(--curriculum);
   --color-manifest: var(--manifest);
