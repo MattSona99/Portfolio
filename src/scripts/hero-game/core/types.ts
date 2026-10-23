@@ -26,6 +26,49 @@ export type HoleState = {
   done: boolean; // il cubo è nel buco (per ora il gioco si ferma qui)
 };
 
+// ── Livello 2 (Sokoban): stanza, blocchi e buchi ──
+
+// Stanza in coordinate locali: l'interno va da (0, 0) a (w - 1, h - 1), il perimetro sta a -1 e w / h.
+export type Room = {
+  w: number;
+  h: number;
+  walls: Point[]; // perimetro (uscita esclusa) e muri interni
+  start: Point; // dove parte il quadrato
+  blocks: Point[];
+  holes: Point[]; // tanti quanti i blocchi
+  exit: Point; // varco nel perimetro: chiuso finché tutti i buchi non sono pieni
+  exitDir: Point; // verso l'esterno
+  pushes: number; // spinte della soluzione costruita
+  solution: Point[]; // una soluzione (mosse unitarie): la stanza è risolvibile per costruzione
+};
+
+// Cosa succede se la mossa verso `next` è permessa: nessuna spinta oppure un blocco che avanza (e magari cade in un buco).
+export type MovePlan = { push: { index: number; from: Point; to: Point; falls: boolean } | null };
+
+export type Snapshot = { position: Point; blocks: Point[]; filled: boolean[] };
+
+export type Level2State = {
+  room: Room; // generata a caso a ogni refresh della pagina, risolvibile per costruzione
+  placed: boolean; // la stanza è stata posizionata nel mondo (livello 2 iniziato)
+  origin: Point; // scostamento locale → mondo: la partenza coincide con la tile del quadrato
+  walls: Set<string>; // chiavi "x,y" in coordinate mondo
+  wallList: Point[]; // gli stessi muri come elenco (per il disegno)
+  exit: Point; // mondo
+  exitDir: Point;
+  exitTarget: boolean; // vero quando tutti i buchi sono pieni (varco aperto)
+  exitOpen: number; // 0 → 1: animazione di apertura del varco
+  blocks: Point[]; // mondo
+  holes: { at: Point; filled: boolean; fillAt: number }[];
+  plan: MovePlan | null; // mossa in corso (preparata da planMove)
+  history: Snapshot[]; // stati precedenti, per annullare l'ultima mossa
+  puffs: { at: Point; t: number }[]; // scoppi di pixel quando un blocco riempie un buco
+  moves: number;
+  reach: number; // distanza massima (in tile) della stanza dalla partenza
+  done: boolean; // il quadrato è entrato nel varco (per ora il gioco si ferma qui)
+  revealAt: number; // istante (ms) in cui l'onda comincia a rivelare la stanza
+  revealFrom: Point;
+};
+
 // Passaggio dal livello 1 (cubo isometrico) al livello 2 (quadrato visto dall'alto).
 export type Flow = {
   level: 1 | 2;
@@ -56,6 +99,7 @@ export type View = {
 export type GameState = {
   fx: HeroFx; // effetti guidati dallo scroll (schiacciamento, esplosione, focus)
   flow: Flow;
+  level2: Level2State;
   course: Course;
   hole: HoleState;
   bumping: boolean; // il cubo sta urtando il muro invisibile (mossa rifiutata)

@@ -25,7 +25,7 @@ export function createFlow(): Flow {
 //   3. un'onda parte dal quadrato, colora per un attimo le tile vicine e si allarga;
 //   4. il quadrato diventa controllabile con le frecce.
 // Il quadrato resta sempre al centro della griglia: la camera è già sul cubo.
-export function startTransition(state: GameState) {
+export function startTransition(state: GameState, hooks: { onLevel2?: () => void } = {}) {
   const f = state.flow;
   if (f.started) return;
   f.started = true;
@@ -40,6 +40,7 @@ export function startTransition(state: GameState) {
     .call(
       () => {
         f.level = 2;
+        hooks.onLevel2?.(); // posiziona la stanza attorno al quadrato
         f.waveFrom = { ...state.position };
         f.waveAt = performance.now();
       },

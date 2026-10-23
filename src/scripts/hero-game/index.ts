@@ -6,6 +6,7 @@ import { createHeroScroll, applyFearEyes, NEUTRAL_FX } from './core/scroll';
 import { createBlastOverlay } from './core/overlay';
 import { createFlow, startTransition, resetFlow, disposeFlow } from './core/flow';
 import { renderPosition2D } from './level2/player';
+import { createLevel2State, placeRoom, planMove, commitMove, undoMove, restartRoom, resetLevel2 } from './level2/sokoban';
 import { gsap } from 'gsap';
 import { generateCourse, createHoleState, canMove, handleArrival, handleDenied, resetCourse } from './level1/course';
 import { createEyeState, createEyeAnimator, getRenderPosition } from './level1/animations';
@@ -23,6 +24,7 @@ export function mountHeroGame(shell: HTMLElement): () => void {
   const state: GameState = {
     fx: { ...NEUTRAL_FX },
     flow: createFlow(),
+    level2: createLevel2State(), // stanza del livello 2: casuale a ogni refresh, risolvibile
     course,
     hole: createHoleState(course),
     bumping: false,
@@ -98,26 +100,37 @@ export function mountHeroGame(shell: HTMLElement): () => void {
     mode: () => (state.flow.level === 2 ? 'topdown' : 'iso'),
     // Senza focus (Hero scrollata via) i tasti freccia non muovono il giocatore.
     // Livello 1: dopo il tuffo nel buco i comandi si fermano finché il piano non è diventato 2D.
-    isEnabled: () => focused && (state.flow.level === 2 ? state.flow.ready : !state.hole.done),
-    // Il buco si apre solo dopo aver attivato in ordine tutte le tile del percorso.
-    canMove: (next) => canMove(state, next),
+    // Livello 2: finché il varco non è stato attraversato.
+    isEnabled: () =>
+      focused && (state.flow.level === 2 ? state.flow.ready && !state.level2.done : !state.hole.done),
+    // Livello 1: il buco si apre solo dopo aver attivato in ordine tutte le tile del percorso.
+    // Livello 2: muri, buchi aperti e blocchi bloccati fermano il quadrato (e preparano la spinta).
+    canMove: (next) => (state.flow.level === 2 ? planMove(state, next) : canMove(state, next)),
     // Avanzamento sulla guida, comparsa del buco e tuffo.
     onArrive: (_pos, from) => {
       if (state.flow.level === 2) {
         // Livello 2: la tile appena lasciata si illumina per un attimo.
         state.flow.stamp = { ...from };
         state.flow.stampAt = performance.now();
+
+        // Spinta del blocco, buco riempito, varco aperto / attraversato.
+        const wave = () => {
+          state.flow.waveFrom = { ...state.position };
+          state.flow.waveAt = performance.now();
+        };
+        commitMove(state, { onFill: wave, onOpen: wave, onExit: wave });
         return;
       }
 
       handleArrival(state, from, {
         onImpact: () => eyeAnimator.land(),
         // Cubo colorato di --fg: parte il passaggio al livello 2.
-        onComplete: () => startTransition(state),
+        onComplete: () => startTransition(state, { onLevel2: () => placeRoom(state) }),
       });
     },
     // Urto contro il muro invisibile: cubo rosso, occhi ">  <" e squash.
     onBump: (from) => {
+      if (state.flow.level === 2) return; // livello 2: basta il rimbalzo a scatti
       handleDenied(state, from);
       eyes.shape = 'chevron';
       eyeAnimator.land();
@@ -128,6 +141,14 @@ export function mountHeroGame(shell: HTMLElement): () => void {
     // Muovere il cubo annulla le espressioni idle in corso.
     onMoveStart: () => eyeAnimator.interrupt(),
     onLand: () => eyeAnimator.land(),
+    // Livello 2: Z annulla l'ultima mossa, R ricomincia la stanza (una piccola onda segnala il ripristino).
+    onAction: (action) => {
+      if (action === 'undo') undoMove(state);
+      else restartRoom(state);
+
+      state.flow.waveFrom = { ...state.position };
+      state.flow.waveAt = performance.now();
+    },
   });
 
   // Le animazioni idle partono quando il gioco viene montato.
@@ -174,6 +195,7 @@ export function mountHeroGame(shell: HTMLElement): () => void {
     if (pendingReset && !focused && fx.worldAlpha < 0.02 && !state.target) {
       resetCourse(state);
       resetFlow(state);
+      resetLevel2(state);
       pendingReset = false;
     }
 

@@ -5,7 +5,7 @@ import type { Locale } from "../contents/manifest.config";
 
 const en = {
   kicker: "Ethics and use of artificial intelligence",
-  title: "AI Manifest",
+  title: "AI Manifesto",
   lede: "What AI should do, what it must never do, and how to prevent and fix the problems.",
   scroll: "Scroll to read",
   readPillars: "Read the pillars",
@@ -21,6 +21,22 @@ const en = {
   related: "Related chapters",
   fallbackNote: "Not translated yet: showing the English version.",
   status: { draft: "Draft", review: "In review", published: "Published" },
+  references: "References and sources",
+  referencesLede: "The declarations, treaties, laws and reports behind this manifesto. Follow the links to the original documents.",
+  linksChecked: "Links checked on",
+  refGroups: {
+    principles: "Principles and declarations",
+    intergovernmental: "Intergovernmental instruments",
+    law: "Law and national frameworks",
+    science: "Scientific assessments and sector guidance",
+  },
+  citedIn: "Used in",
+  openSource: "Open the document",
+  about: "Who wrote this",
+  writtenBy: "Authorship",
+  cite: "How to cite",
+  sendCorrection: "Send a correction",
+  whoWrote: "Who wrote this",
 };
 
 const it: typeof en = {
@@ -41,6 +57,22 @@ const it: typeof en = {
   related: "Capitoli collegati",
   fallbackNote: "Non ancora tradotto: versione inglese.",
   status: { draft: "Bozza", review: "In revisione", published: "Pubblicato" },
+  references: "Riferimenti e fonti",
+  referencesLede: "Le dichiarazioni, i trattati, le leggi e i rapporti su cui si basa questo manifesto. Segui i link per aprire i documenti originali.",
+  linksChecked: "Link verificati il",
+  refGroups: {
+    principles: "Principi e dichiarazioni",
+    intergovernmental: "Strumenti intergovernativi",
+    law: "Leggi e quadri nazionali",
+    science: "Valutazioni scientifiche e linee guida di settore",
+  },
+  citedIn: "Usato in",
+  openSource: "Apri il documento",
+  about: "Chi lo ha scritto",
+  writtenBy: "Paternità",
+  cite: "Come citare",
+  sendCorrection: "Invia una correzione",
+  whoWrote: "Chi lo ha scritto",
 };
 
 export const manifestUi: Record<Locale, typeof en> = { en, it };

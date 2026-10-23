@@ -16,6 +16,13 @@ function fillTile(ctx: CanvasRenderingContext2D, tile: Point, view: View, inset 
   ctx.fill();
 }
 
+// Raggio (in tile) a cui arriva l'onda: copre l'intero schermo e tutta la stanza.
+export function waveMaxRadius(state: GameState, view: View) {
+  const T = CONFIG.topdown;
+  const screen = Math.ceil(Math.hypot(view.width, view.height) / (2 * T.tile)) + 2;
+  return Math.max(screen, state.level2.reach + 2);
+}
+
 // Onda che parte dal quadrato: colora per un attimo le tile vicine e si allarga sempre più.
 // Il fronte è un cerchio sulla griglia di tile, quindi ne esce un'onda "a pixel";
 // l'intensità è a 4 livelli, non continua.
@@ -30,7 +37,7 @@ export function drawWave(
   const t = (view.now - f.waveAt) / T.waveMs;
   if (!(t > 0 && t < 1)) return;
 
-  const maxRadius = Math.ceil(Math.hypot(view.width, view.height) / (2 * T.tile)) + 2;
+  const maxRadius = waveMaxRadius(state, view);
   const radius = t * maxRadius;
   const reach = Math.ceil(radius + T.waveThickness);
   const fade = Math.pow(1 - t, 1.2);

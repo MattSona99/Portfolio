@@ -25,6 +25,8 @@ export const CHAPTERS = [
   "education",
   "creativity-and-ip",
   "governance",
+  "ai-agents",
+  "nature-and-wildlife",
   "future",
 ] as const;
 

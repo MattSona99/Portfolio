@@ -32,7 +32,7 @@ export const CONFIG = {
 
   // Livello 2: piano visto dall'alto con un quadrato 2D.
   topdown: {
-    tile: 150, // lato di una tile vista dall'alto (px): area simile al rombo isometrico (350×150/2)
+    tile: 120, // lato di una tile vista dall'alto (px): una stanza 10×7 sta intera nella Hero
     playerHalf: 0.4286, // metà lato del quadrato (in tile) all'inizio: coincide con la faccia superiore del cubo sprofondato
     playerHalfEnd: 0.36, // metà lato a trasformazione finita
     pixel: 5, // "pixel" dell'effetto: le coordinate del quadrato si agganciano a multipli di questo valore (px)
@@ -41,6 +41,18 @@ export const CONFIG = {
     cameraFollow: 60, // camera quasi rigida: il quadrato resta al centro e scorre la griglia
     waveMs: 1700, // durata dell'onda che parte dal quadrato
     waveThickness: 0.9, // spessore del fronte d'onda (in tile)
+  },
+
+  // Livello 2: "Riempi i buchi" (Sokoban). Stanza casuale a ogni refresh, risolvibile per costruzione.
+  sokoban: {
+    w: 8, // interno della stanza (tile)
+    h: 5,
+    blocks: 3, // blocchi = buchi
+    innerWalls: 5, // muri interni
+    minPushes: 12, // spinte minime della soluzione costruita
+    minMoves: 24, // mosse minime della soluzione costruita
+    minDistance: 12, // distanza totale minima (in tile) tra blocchi e buchi: scarta le stanze banali
+    scramble: 30, // mosse inverse "di rimescolamento" minime dopo aver aperto tutti i buchi
   },
 
   // Passaggio dal livello 1 al livello 2 (secondi).

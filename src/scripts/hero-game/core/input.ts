@@ -21,6 +21,8 @@ const TOPDOWN_STEP: Record<string, Point> = {
   ArrowRight: { x: 1, y: 0 },
 };
 
+const ACTIONS: Record<string, 'undo' | 'restart'> = { z: 'undo', Z: 'undo', r: 'restart', R: 'restart' };
+
 type InputHooks = {
   // Modalità dei comandi: 'iso' (due frecce insieme) o 'topdown' (una freccia).
   mode?: () => 'iso' | 'topdown';
@@ -32,11 +34,13 @@ type InputHooks = {
   isEnabled?: () => boolean;
   // Chiamato quando il giocatore arriva su una nuova tile (posizione già aggiornata).
   onArrive?: (position: Point, from: Point) => void;
-  // Solo modalità 'iso'. Se restituisce false la mossa è rifiutata (es. ingresso nel buco a
-  // percorso incompleto): il cubo urta un muro invisibile e rimbalza indietro (vedi onBump).
+  // Se restituisce false la mossa è rifiutata (livello 1: ingresso nel buco a percorso incompleto;
+  // livello 2: muro, buco aperto, blocco bloccato): il giocatore urta e rimbalza (vedi onBump).
   canMove?: (next: Point) => boolean;
   // Chiamato nell'istante dell'impatto contro il muro invisibile.
   onBump?: (from: Point, next: Point) => void;
+  // Solo modalità 'topdown': Z annulla l'ultima mossa, R ricomincia la stanza.
+  onAction?: (action: 'undo' | 'restart') => void;
 };
 
 export function bindKeyboard(
@@ -76,7 +80,7 @@ export function bindKeyboard(
 
   // Mossa rifiutata: il cubo parte verso la tile, urta il muro invisibile a metà strada
   // e rimbalza indietro. Non si concatena con altri salti anche se i tasti restano premuti.
-  const bump = (dir: MoveDir, next: Point, from: Point) => {
+  const bump = (dir: MoveDir | null, next: Point, from: Point) => {
     state.target = next;
     state.moveDir = dir;
     state.moveProgress = 0;
@@ -94,7 +98,7 @@ export function bindKeyboard(
           state.bumping = false;
         },
       })
-      .to(state, { moveProgress: 0.42, duration: 0.11, ease: 'power2.in' })
+      .to(state, { moveProgress: isTopdown() ? 0.25 : 0.42, duration: 0.11, ease: 'power2.in' })
       .call(() => hooks.onBump?.(from, next))
       .to(state, { moveProgress: 0, duration: 0.4, ease: 'power3.out' });
   };
@@ -116,7 +120,7 @@ export function bindKeyboard(
 
     const from: Point = { ...state.position };
 
-    if (!topdown && move.dir && hooks.canMove && !hooks.canMove(next)) {
+    if (hooks.canMove && !hooks.canMove(next)) {
       bump(move.dir, next, from);
       return;
     }
@@ -151,6 +155,18 @@ export function bindKeyboard(
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
+    // Livello 2: Z annulla, R ricomincia.
+    const action = ACTIONS[event.key];
+    if (action && hooks.onAction && isTopdown() && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      if (!(hooks.isEnabled?.() ?? true)) return;
+      if (document.activeElement !== shell && !shell.matches(':hover')) return;
+      if ((event.target as HTMLElement)?.closest('input, textarea, button, select')) return;
+
+      event.preventDefault();
+      if (!event.repeat) hooks.onAction(action);
+      return;
+    }
+
     if (!ARROWS.includes(event.key)) return;
 
     // Hero senza focus (scroll): i tasti freccia tornano al browser.
